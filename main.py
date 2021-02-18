@@ -1,6 +1,6 @@
 #mainloop
 import pygame
-from Player_class import Player
+from dead_screen import deadScreen
 
 def draw(screen, width, height):
     #ground
@@ -31,14 +31,14 @@ if __name__ == '__main__':
 
 
     class Player(pygame.sprite.Sprite):
-        def __init__(self, x, y, width, height, group):
+        def __init__(self, x, y, width, height, hp, group):
             super().__init__(*group)
             self.image = pygame.Surface([width, height])
             self.image.fill((255, 0, 0))
             self.rect = pygame.Rect(x, y, width, height)
             self.vx = 0
             self.vy = 0
-            self.hp = 0
+            self.hp = hp
 
         def update(self):
             if pygame.sprite.spritecollideany(self, ground_layer):
@@ -92,16 +92,18 @@ if __name__ == '__main__':
             pygame.draw.rect(self.image, pygame.Color((255, 0, 0)), [(1, 1), (int(player.hp), 12)], width=0)
 
 
-    player = Player(player_position[0], player_position[1], 20, 50, [all_sprites, player])
+    # input this blok in restart cheacking
+    player = Player(player_position[0], player_position[1], 20, 50, 0, [all_sprites, player])
     ground = Ground(width, height, [all_sprites, ground_layer])
     enemy_1 = Enemy(50, 50, 30, 30, [all_sprites, enemies])
     MainHPbar = HPbar(player, width, height, [all_sprites, tools])
+    # end of block
 
     # movement triggers
     right_trigger = False
     left_trigger = False
     jump_trigger = False
-    condition_trigger = 1
+    condition_trigger = 2
 
     while running:
         if condition_trigger == 2:
@@ -173,43 +175,38 @@ if __name__ == '__main__':
             all_sprites.draw(screen)
             all_sprites.update()
 
-        else:
+        if condition_trigger == 3:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
 
-            screen.fill((0, 0, 0))
-            font = pygame.font.Font(None, 50)
-            text = font.render("You lose!!!", True, (100, 100, 100))
-            text_x = width // 2 - text.get_width() // 2
-            text_y = height // 2 - text.get_height() // 2
-            text_w = text.get_width()
-            text_h = text.get_height()
-            screen.blit(text, (text_x, text_y))
-            pygame.draw.rect(screen, pygame.Color((255, 255, 255)), [width//4, height//4, width//2, height//2], width=5)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = event.pos
+                    rx, ry, rw, rh, qx, qy, qw, qh = deadScreen(screen, width, height)
+                    print()
+                    # restart cheacking
+                    if rx <= pos[0] <= rx + rw and ry <= pos[1] <= ry + rh:
+                        condition_trigger = 2
 
-            restart_text = font.render("Restart", True, (100, 100, 100))
-            restart_text_x = width // 8*3 - restart_text.get_width() // 2
-            restart_text_y = height // 8*5 - restart_text.get_height() // 2
-            restart_text_w = restart_text.get_width()
-            restart_text_h = restart_text.get_height()
-            screen.blit(restart_text, (restart_text_x, restart_text_y))
+                        all_sprites = pygame.sprite.Group()
+                        player = pygame.sprite.Group()
+                        ground_layer = pygame.sprite.Group()
+                        enemies = pygame.sprite.Group()
+                        tools = pygame.sprite.Group()
 
-            quit_text = font.render("Quit", True, (100, 100, 100))
-            quit_text_x = width // 8 * 5 - quit_text.get_width() // 2
-            quit_text_y = height // 8 * 5 - quit_text.get_height() // 2
-            quit_text_w = quit_text.get_width()
-            quit_text_h = quit_text.get_height()
-            screen.blit(quit_text, (quit_text_x, quit_text_y))
-            # button_text_w = max(quit_text_w // 2, restart_text_w//2)
-            button_text_w = 60
-            pygame.draw.rect(screen, pygame.Color((255, 255, 255)), [restart_text_x - button_text_w, restart_text_y - restart_text_h//2, button_text_w*4, restart_text_h*2],
-                             width=5)
-            pygame.draw.rect(screen, pygame.Color((255, 255, 255)),
-                             [quit_text_x - button_text_w*1.4, quit_text_y - quit_text_h // 2,
-                              button_text_w*4, quit_text_h * 2],
-                             width=5)
-            print(button_text_w)
+                        # input beggin block here
+                        player = Player(player_position[0], player_position[1], 20, 50, 50, [all_sprites, player])
+                        ground = Ground(width, height, [all_sprites, ground_layer])
+                        enemy_1 = Enemy(50, 50, 30, 30, [all_sprites, enemies])
+                        MainHPbar = HPbar(player, width, height, [all_sprites, tools])
+                        # end of block
+
+                    # quit
+                    if qx <= pos[0] <= qx + qw and qy <= pos[1] <= qy + qh:
+                        running = False
+
+            deadScreen(screen, width, height)
+            clock.tick(30)
 
 
 
