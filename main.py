@@ -38,15 +38,18 @@ if __name__ == '__main__':
             self.rect = pygame.Rect(x, y, width, height)
             self.vx = 0
             self.vy = 0
+            self.isGrounded = False
             self.hp = hp
 
         def update(self):
             if pygame.sprite.spritecollideany(self, ground_layer):
+                self.isGrounded = True
                 if self.vy <= 0:
                     self.rect = self.rect.move(self.vx, self.vy)
                 else:
                     self.rect = self.rect.move(self.vx, 0)
             else:
+                self.isGrounded = False
                 self.rect = self.rect.move(self.vx, self.vy)
 
             if pygame.sprite.spritecollideany(self, enemies):
@@ -69,7 +72,7 @@ if __name__ == '__main__':
             super().__init__(*group)
             self.image = pygame.Surface([width, height])
             self.image.fill((0, 255, 0))
-            self.rect = pygame.Rect(x, y, width, height)
+            self.rect = pygame.Rect(x-width, y-height, width*2, height*2)
             self.vx = 0
             self.vy = 300 * clock.tick(30) / 1000
 
@@ -93,7 +96,7 @@ if __name__ == '__main__':
 
 
     # input this blok in restart cheacking
-    player = Player(player_position[0], player_position[1], 20, 50, 0, [all_sprites, player])
+    player = Player(player_position[0], player_position[1], 20, 50, 100, [all_sprites, player])
     ground = Ground(width, height, [all_sprites, ground_layer])
     enemy_1 = Enemy(50, 50, 30, 30, [all_sprites, enemies])
     MainHPbar = HPbar(player, width, height, [all_sprites, tools])
@@ -149,8 +152,9 @@ if __name__ == '__main__':
 
             # vertical move begin
             if jump_trigger:
-                vertical_speed = -300
-                player.vy = vertical_speed * clock.tick(30) / 1000
+                if player.isGrounded:
+                    vertical_speed = -300
+                    player.vy = vertical_speed * clock.tick(30) / 1000
                 jump_trigger = False
             else:
                 if vertical_speed >= 300:
