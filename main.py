@@ -11,6 +11,7 @@ def draw(screen, width, height):
 
 
 
+
 if __name__ == '__main__':
     pygame.init()
     size = width, height = 1200, 800
@@ -68,17 +69,27 @@ if __name__ == '__main__':
 
 
     class Enemy(pygame.sprite.Sprite):
-        def __init__(self, x,y, width, height, group):
+        def __init__(self, x,y, width, height, player, group):
             super().__init__(*group)
             self.image = pygame.Surface([width, height])
             self.image.fill((0, 255, 0))
             self.rect = pygame.Rect(x-width, y-height, width*2, height*2)
             self.vx = 0
             self.vy = 300 * clock.tick(30) / 1000
+            self.player = player
+
+        def EnemyAI(self, player):
+            if player.rect.x > self.rect.x:
+                self.vx = 100 * clock.tick(30) / 1000
+            elif player.rect.x < self.rect.x:
+                self.vx = -100 * clock.tick(30) / 1000
+            else:
+                self.vx = 0
+            self.rect = self.rect.move(self.vx, 0)
 
         def update(self):
             if pygame.sprite.spritecollideany(self, ground_layer):
-                self.rect = self.rect.move(self.vx, 0)
+                self.EnemyAI(self.player)
             else:
                 self.rect = self.rect.move(self.vx, self.vy)
 
@@ -98,7 +109,7 @@ if __name__ == '__main__':
     # input this blok in restart cheacking
     player = Player(player_position[0], player_position[1], 20, 50, 100, [all_sprites, player])
     ground = Ground(width, height, [all_sprites, ground_layer])
-    enemy_1 = Enemy(50, 50, 30, 30, [all_sprites, enemies])
+    enemy_1 = Enemy(50, 50, 30, 30, player, [all_sprites, enemies])
     MainHPbar = HPbar(player, width, height, [all_sprites, tools])
     # end of block
 
@@ -167,6 +178,8 @@ if __name__ == '__main__':
             # check
             print(MainHPbar.hp)
             # check end
+
+            print(player.rect.x)
 
             clock.tick(30)
             screen.fill((0, 0, 0))
