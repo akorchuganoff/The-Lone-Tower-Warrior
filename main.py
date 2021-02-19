@@ -5,6 +5,7 @@ import random
 from dead_screen import deadScreen
 from logo_screen import logo
 from menu_screen import menuScreen
+from shop_screen import shopScreen
 
 # TODO: make an enemy spawn
 # TODO: make waves of enemies
@@ -24,6 +25,7 @@ if __name__ == '__main__':
     vertical_speed = 500
 
     all_sprites = pygame.sprite.Group()
+    shop_group = pygame.sprite.Group()
     maintowergroup = pygame.sprite.Group()
     player_group = pygame.sprite.Group()
     ground_layer = pygame.sprite.Group()
@@ -41,9 +43,18 @@ if __name__ == '__main__':
             self.width = width
             self.height = height
             self.MainTowerHPbar = HPbar(self, 500, 20, [all_sprites, tools])
+            self.damage = 0
 
         def update(self):
-            pass
+            global collisionClock
+
+            if collisionClock >= 5:
+                for enemy in pygame.sprite.spritecollide(self, enemies, False):
+                    enemy.hp -= self.damage
+                    if enemy.hp <= 0:
+                        enemy.hpBar.kill()
+                        enemy.kill()
+                        money.amount += 1
 
     class Player(pygame.sprite.Sprite):
         def __init__(self, x, y, width, height, hp, group):
@@ -128,7 +139,6 @@ if __name__ == '__main__':
                     player.hp -= 1
                 if pygame.sprite.spritecollideany(self, maintowergroup):
                     mainTower.hp -= 1
-                collisionClock = 0
 
 
 
@@ -185,6 +195,7 @@ if __name__ == '__main__':
     mainTower = MainTower(width//8*3, height//4, width//4, height//2, 1000, [all_sprites, maintowergroup])
     player = Player(player_position[0], player_position[1], 20, 50, 100, [all_sprites, player_group])
     ground = Ground(width, height, [all_sprites, ground_layer])
+    shop = shopScreen(width, height, [shop_group], money)
 
     waves = 0
     typesOfEnemies = ['goblin', 'giant']
@@ -195,6 +206,7 @@ if __name__ == '__main__':
     left_trigger = False
     jump_trigger = False
     condition_trigger = 2
+    shop_trigger = False
 
     collisionClock = 0
 
@@ -242,76 +254,112 @@ if __name__ == '__main__':
             menuScreen(screen, width, height)
 
         if condition_trigger == 2:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
+            if not shop_trigger:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
 
-                if event.type == pygame.KEYDOWN:
-                    # horizontal move begin
-                    if event.key == pygame.K_RIGHT:
-                        right_trigger = True
-                        left_trigger = False
-                    elif event.key == pygame.K_LEFT:
-                        right_trigger = False
-                        left_trigger = True
-                    # horizontal move end
-                    # vertical move
-                    elif event.key == pygame.K_UP:
-                        jump_trigger = True
+                    if event.type == pygame.KEYDOWN:
+                        # horizontal move begin
+                        if event.key == pygame.K_RIGHT:
+                            right_trigger = True
+                            left_trigger = False
+                        elif event.key == pygame.K_LEFT:
+                            right_trigger = False
+                            left_trigger = True
+                        # horizontal move end
 
-                if event.type == pygame.KEYUP:
-                    # horizontal move begin
-                    if event.key == pygame.K_RIGHT:
-                        right_trigger = False
-                    elif event.key == pygame.K_LEFT:
-                        left_trigger = False
-                    # horizontal move end
+                        # vertical move
+                        elif event.key == pygame.K_UP:
+                            jump_trigger = True
+                        # vertical move end
 
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    player.hit()
+                        # shop
+                        elif event.key == pygame.K_q:
+                            shop_trigger = True
 
-            if player.hp <= 0 or mainTower.hp <= 0:
-                condition_trigger = 3
 
-            # horizontal move begin
-            if left_trigger:
-                player.vx = -1 * horizontall_speed * clock.tick(30) / 1000
-            elif right_trigger:
-                player.vx = horizontall_speed * clock.tick(30) / 1000
-            else:
-                player.vx = 0
-            # horizontal move end
+                    if event.type == pygame.KEYUP:
+                        # horizontal move begin
+                        if event.key == pygame.K_RIGHT:
+                            right_trigger = False
+                        elif event.key == pygame.K_LEFT:
+                            left_trigger = False
+                        # horizontal move end
 
-            # vertical move begin
-            if jump_trigger:
-                if player.isGrounded:
-                    vertical_speed = -300
-                    player.vy = vertical_speed * clock.tick(30) / 1000
-                jump_trigger = False
-            else:
-                if vertical_speed >= 300:
-                    vertical_speed = 300
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        player.hit()
+
+                if player.hp <= 0 or mainTower.hp <= 0:
+                    condition_trigger = 3
+
+                # horizontal move begin
+                if left_trigger:
+                    player.vx = -1 * horizontall_speed * clock.tick(30) / 1000
+                elif right_trigger:
+                    player.vx = horizontall_speed * clock.tick(30) / 1000
                 else:
-                    vertical_speed += 20
-                player.vy = vertical_speed * clock.tick(30) / 1000
-            # vertical move end
+                    player.vx = 0
+                # horizontal move end
 
-            # enemies spawn
-            if int(time) %5 == 0:
-                time += 1
-                newWave(typesOfEnemies)
+                # vertical move begin
+                if jump_trigger:
+                    if player.isGrounded:
+                        vertical_speed = -300
+                        player.vy = vertical_speed * clock.tick(30) / 1000
+                    jump_trigger = False
+                else:
+                    if vertical_speed >= 300:
+                        vertical_speed = 300
+                    else:
+                        vertical_speed += 20
+                    player.vy = vertical_speed * clock.tick(30) / 1000
+                # vertical move end
+
+                # enemies spawn
+                if int(time) %5 == 0:
+                    time += 1
+                    newWave(typesOfEnemies)
 
 
-            # check
-            # check end
+                # check
+                # check end
 
-            screen.fill((0, 0, 0))
+                screen.fill((0, 0, 0))
 
-            # Make a right order. It is the layer drawing!!!
+                # Make a right order. It is the layer drawing!!!
 
-            # Main act
-            all_sprites.draw(screen)
-            all_sprites.update()
+                # Main act
+                all_sprites.draw(screen)
+                all_sprites.update()
+
+            else:
+
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_q:
+                            shop_trigger = False
+
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        x, y = event.pos
+                        xr, yr, xl, yl = shop.update()
+                        print(x, y)
+                        print(xr, yr, xl, yl)
+                        if xr<=x-width//8<=xl and yr<=y-height//8<=yl:
+                            if shop.money.amount >= shop.price:
+                                shop.buy(mainTower)
+                                print('buy')
+
+                            else:
+                                pass
+
+                shop_group.draw(screen)
+                shop_group.update()
+
+
 
 
         if condition_trigger == 3:
@@ -354,6 +402,8 @@ if __name__ == '__main__':
 
         collisionClock += 1
         time += clock.tick(30) / 1000
+        if collisionClock >= 6:
+            collisionClock = 0
 
         pygame.display.flip()
     pygame.quit()
