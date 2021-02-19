@@ -1,16 +1,17 @@
 #mainloop
 import pygame
+from math import sqrt
+import random
+import copy
+
 from dead_screen import deadScreen
+from logo_screen import logo
+from menu_screen import menuScreen
 
-def draw(screen, width, height):
-    #ground
-    pygame.draw.rect(screen, pygame.Color('Gray'), ((0, height // 4 * 3), (width, height//4)), width=0)
-    #tower
-    pygame.draw.rect(screen, pygame.Color((100, 100, 100)), ((width//9*4, height//8*3), (width//9, height // 8 * 3)), width=0)
-
-
-
-
+# TODO: make an enemy spawn
+# TODO: make waves of enemies
+# TODO: make a portal
+# TODO: camera
 
 if __name__ == '__main__':
     pygame.init()
@@ -25,11 +26,26 @@ if __name__ == '__main__':
     vertical_speed = 500
 
     all_sprites = pygame.sprite.Group()
+    maintowergroup = pygame.sprite.Group()
     player = pygame.sprite.Group()
     ground_layer = pygame.sprite.Group()
     enemies = pygame.sprite.Group()
     tools = pygame.sprite.Group()
 
+
+    class MainTower(pygame.sprite.Sprite):
+        def __init__(self, x, y, width, height, hp, group):
+            super().__init__(*group)
+            self.image = pygame.Surface([width, height])
+            self.image.fill((0, 0, 255))
+            self.rect = pygame.Rect(x, y, width, height)
+            self.hp = hp
+            self.width = width
+            self.height = height
+
+        def update(self):
+            if pygame.sprite.spritecollideany(self, enemies):
+                self.hp -= 1
 
     class Player(pygame.sprite.Sprite):
         def __init__(self, x, y, width, height, hp, group):
@@ -42,6 +58,19 @@ if __name__ == '__main__':
             self.isGrounded = False
             self.hp = hp
 
+            self.width = width
+            self.height = height
+
+        def hit(self):
+            global money
+            for enemy in pygame.sprite.spritecollide(self, enemies, False):
+                enemy.hp -= 1
+                if enemy.hp <= 0:
+                    enemy.hpBar.kill()
+                    enemy.kill()
+                    money.amount += 1
+
+
         def update(self):
             if pygame.sprite.spritecollideany(self, ground_layer):
                 self.isGrounded = True
@@ -49,6 +78,7 @@ if __name__ == '__main__':
                     self.rect = self.rect.move(self.vx, self.vy)
                 else:
                     self.rect = self.rect.move(self.vx, 0)
+
             else:
                 self.isGrounded = False
                 self.rect = self.rect.move(self.vx, self.vy)
@@ -78,10 +108,15 @@ if __name__ == '__main__':
             self.vy = 300 * clock.tick(30) / 1000
             self.player = player
 
-        def EnemyAI(self, player):
-            if player.rect.x > self.rect.x:
+            self.hp = 10
+            self.hpBar = HPbar(self, width, 10, [all_sprites, tools])
+            self.width = width
+            self.height = height
+
+        def EnemyAI(self):
+            if self.player.rect.x + self.player.width//2 > self.rect.x:
                 self.vx = 100 * clock.tick(30) / 1000
-            elif player.rect.x < self.rect.x:
+            elif self.player.rect.x + self.player.width//2 < self.rect.x:
                 self.vx = -100 * clock.tick(30) / 1000
             else:
                 self.vx = 0
@@ -89,28 +124,67 @@ if __name__ == '__main__':
 
         def update(self):
             if pygame.sprite.spritecollideany(self, ground_layer):
-                self.EnemyAI(self.player)
+                self.EnemyAI()
             else:
                 self.rect = self.rect.move(self.vx, self.vy)
 
     class HPbar(pygame.sprite.Sprite):
         def __init__(self, player, width, height, groups):
             super().__init__(*groups)
-            self.image = pygame.Surface([102, 12])
-            self.rect = pygame.Rect(width//4*3, height//16, 102, 12)
+            self.image = pygame.Surface([width, height])
+            self.rect = pygame.Rect(player.rect.x - width // 2, player.rect.y - height, width, height)
+            self.player = player
+            self.hp_beg = player.hp
             self.hp = player.hp
+            self.width = width
+            self.height = height
 
         def update(self):
-            self.hp = player.hp
+            self.rect = pygame.Rect(self.player.rect.x - self.width // 2 + self.player.width // 2, self.player.rect.y - self.height*2, self.width, self.height)
+            self.hp = self.player.hp
             self.image.fill((255, 255, 255))
-            pygame.draw.rect(self.image, pygame.Color((255, 0, 0)), [(1, 1), (int(player.hp), 12)], width=0)
+            pygame.draw.rect(self.image, pygame.Color((255, 0, 0)), [(1, 1), (self.width*int(self.hp)/self.hp_beg, height-2)], width=0)
+
+
+    class Money(pygame.sprite.Sprite):
+        def __init__(self, groups):
+            super().__init__(*groups)
+            self.image = pygame.Surface([500, 35])
+            self.rect = pygame.Rect(50, 50, 100, 15)
+            self.font = pygame.font.Font(None, 30)
+            self.amount = 0
+
+        def update(self):
+
+            text = self.font.render(f"Your balance: {self.amount}", True, (200, 200, 200))
+            text_x = 0
+            text_y = 0
+            text_w = text.get_width()
+            text_h = text.get_height()
+            self.image.fill((0, 0, 0))
+            self.image.blit(text, (text_x, text_y))
+
+
+    def newWave(typesOfEnemies):
+        global waves
+        waves+= 1
+        for i in range(waves):
+            enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
+            if enemy == 'goblin':
+                enemy = Enemy(random.randrange(0, width-50), 600, 30, 30, player, [all_sprites, enemies])
+            elif enemy == 'giant':
+                enemy = Enemy(random.randrange(0, width-50), 600, 50, 50, mainTower, [all_sprites, enemies])
 
 
     # input this blok in restart cheacking
+    money = Money([all_sprites, tools])
+    mainTower = MainTower(width//8*3, height//4, width//4, height//2, 1000, [all_sprites, maintowergroup])
     player = Player(player_position[0], player_position[1], 20, 50, 100, [all_sprites, player])
     ground = Ground(width, height, [all_sprites, ground_layer])
-    enemy_1 = Enemy(50, 50, 30, 30, player, [all_sprites, enemies])
-    MainHPbar = HPbar(player, width, height, [all_sprites, tools])
+    PlayerHPbar = HPbar(player, 100, 10, [all_sprites, tools])
+    MainTowerHPbar = HPbar(mainTower, 500, 20, [all_sprites, tools])
+    waves = 0
+    typesOfEnemies = ['goblin', 'giant']
     # end of block
 
     # movement triggers
@@ -119,7 +193,52 @@ if __name__ == '__main__':
     jump_trigger = False
     condition_trigger = 2
 
+    time = 0
+
     while running:
+        if condition_trigger == -1:
+            if time >= 4:
+                condition_trigger = 0
+            else:
+                logo(screen, width, height)
+
+        if condition_trigger == 0:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = event.pos
+                    start_pos, continue_pos, stats_pos = menuScreen(screen, width, height)
+                    if start_pos[0]<=x<=start_pos[2] and start_pos[1]<=y<=start_pos[3]:
+                        print('start')
+                        condition_trigger = 2
+
+                        # start game
+                        all_sprites = pygame.sprite.Group()
+                        maintowergroup = pygame.sprite.Group()
+                        player = pygame.sprite.Group()
+                        ground_layer = pygame.sprite.Group()
+                        enemies = pygame.sprite.Group()
+                        tools = pygame.sprite.Group()
+
+                        money = Money([all_sprites, tools])
+                        mainTower = MainTower(width // 8 * 3, height // 4, width // 4, height // 2, 10,
+                                              [all_sprites, maintowergroup])
+                        player = Player(player_position[0], player_position[1], 20, 50, 100, [all_sprites, player])
+                        ground = Ground(width, height, [all_sprites, ground_layer])
+                        PlayerHPbar = HPbar(player, 100, 10, [all_sprites, tools])
+                        MainTowerHPbar = HPbar(mainTower, 500, 20, [all_sprites, tools])
+                        waves = 0
+                        typesOfEnemies = ['goblin', 'giant']
+
+                    elif continue_pos[0]<=x<=continue_pos[2] and continue_pos[1]<=y<=continue_pos[3]:
+                        print('continue')
+                    elif stats_pos[0]<=x<=stats_pos[2] and stats_pos[1]<=y<=stats_pos[3]:
+                        print('stats')
+
+            menuScreen(screen, width, height)
+
         if condition_trigger == 2:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -147,9 +266,9 @@ if __name__ == '__main__':
                     # horizontal move end
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    pass
+                    player.hit()
 
-            if player.hp <= 0:
+            if player.hp <= 0 or mainTower.hp <= 0:
                 condition_trigger = 3
 
             # horizontal move begin
@@ -175,22 +294,25 @@ if __name__ == '__main__':
                 player.vy = vertical_speed * clock.tick(30) / 1000
             # vertical move end
 
+            # enemies spawn
+            if int(time) % 11 == 0:
+                time += 1
+                newWave(typesOfEnemies)
+
+
             # check
-            print(MainHPbar.hp)
             # check end
 
-            print(player.rect.x)
 
             clock.tick(30)
             screen.fill((0, 0, 0))
 
             # Make a right order. It is the layer drawing!!!
-            # Landskapes
-            draw(screen, width, height)
 
             # Main act
             all_sprites.draw(screen)
             all_sprites.update()
+
 
         if condition_trigger == 3:
             for event in pygame.event.get():
@@ -200,10 +322,12 @@ if __name__ == '__main__':
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     pos = event.pos
                     rx, ry, rw, rh, qx, qy, qw, qh = deadScreen(screen, width, height)
-                    print()
-                    # restart cheacking
+                    # restart checking
                     if rx <= pos[0] <= rx + rw and ry <= pos[1] <= ry + rh:
                         condition_trigger = 2
+
+                        for elem in all_sprites:
+                            elem.kill()
 
                         all_sprites = pygame.sprite.Group()
                         player = pygame.sprite.Group()
@@ -212,10 +336,16 @@ if __name__ == '__main__':
                         tools = pygame.sprite.Group()
 
                         # input beggin block here
-                        player = Player(player_position[0], player_position[1], 20, 50, 50, [all_sprites, player])
+                        money = Money([all_sprites, tools])
+                        mainTower = MainTower(width // 8 * 3, height // 4, width // 4, height // 2, 1000,
+                                              [all_sprites, maintowergroup])
+                        player = Player(player_position[0], player_position[1], 20, 50, 100, [all_sprites, player])
                         ground = Ground(width, height, [all_sprites, ground_layer])
-                        enemy_1 = Enemy(50, 50, 30, 30, [all_sprites, enemies])
-                        MainHPbar = HPbar(player, width, height, [all_sprites, tools])
+                        PlayerHPbar = HPbar(player, 100, 10, [all_sprites, tools])
+                        MainTowerHPbar = HPbar(mainTower, 500, 20, [all_sprites, tools])
+                        waves = 0
+                        time = 0
+                        typesOfEnemies = ['goblin', 'giant']
                         # end of block
 
                     # quit
@@ -225,7 +355,8 @@ if __name__ == '__main__':
             deadScreen(screen, width, height)
             clock.tick(30)
 
-
+        time += clock.tick(30) / 1000
+        print(int(time))
 
         pygame.display.flip()
     pygame.quit()
