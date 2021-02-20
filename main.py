@@ -7,8 +7,6 @@ from logo_screen import logo
 from menu_screen import menuScreen
 from shop_screen import shopScreen
 
-# TODO: make an enemy spawn
-# TODO: make waves of enemies
 # TODO: make a portal
 # TODO: camera
 
