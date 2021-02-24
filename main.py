@@ -328,14 +328,7 @@ if __name__ == '__main__':
                     time += 1
                     newWave(typesOfEnemies)
 
-
-                # check
-                # check end
-
                 screen.fill((0, 0, 0))
-
-                # Make a right order. It is the layer drawing!!!
-
                 # Main act
                 all_sprites.draw(screen)
                 all_sprites.update()
@@ -366,9 +359,6 @@ if __name__ == '__main__':
                 shop_group.draw(screen)
                 shop_group.update()
 
-
-
-
         elif condition_trigger == 3:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -384,23 +374,23 @@ if __name__ == '__main__':
                         for elem in all_sprites:
                             elem.kill()
 
-                            # start game
-                            all_sprites = pygame.sprite.Group()
-                            maintowergroup = pygame.sprite.Group()
-                            player_group = pygame.sprite.Group()
-                            ground_layer = pygame.sprite.Group()
-                            enemies = pygame.sprite.Group()
-                            tools = pygame.sprite.Group()
+                        # start game
+                        all_sprites = pygame.sprite.Group()
+                        maintowergroup = pygame.sprite.Group()
+                        player_group = pygame.sprite.Group()
+                        ground_layer = pygame.sprite.Group()
+                        enemies = pygame.sprite.Group()
+                        tools = pygame.sprite.Group()
 
-                            money = Money([all_sprites, tools])
-                            mainTower = MainTower(width // 8 * 3, height // 4, width // 4, height // 2, 1000,
-                                                  [all_sprites, maintowergroup])
-                            player = Player(player_position[0], player_position[1], 20, 50, 100,
-                                            [all_sprites, player_group])
-                            ground = Ground(width, height, [all_sprites, ground_layer])
-                            shop = shopScreen(width, height, [shop_group], money)
-                            waves = 0
-                            typesOfEnemies = ['goblin', 'giant']
+                        money = Money([all_sprites, tools])
+                        mainTower = MainTower(width // 8 * 3, height // 4, width // 4, height // 2, 1000,
+                                              [all_sprites, maintowergroup])
+                        player = Player(player_position[0], player_position[1], 20, 50, 100,
+                                        [all_sprites, player_group])
+                        ground = Ground(width, height, [all_sprites, ground_layer])
+                        shop = shopScreen(width, height, [shop_group], money)
+                        waves = 0
+                        typesOfEnemies = ['goblin', 'giant']
 
                     # quit
                     if qx <= pos[0] <= qx + qw and qy <= pos[1] <= qy + qh:
