@@ -124,6 +124,29 @@ class Enemy(pygame.sprite.Sprite):
                 mainTower.hp -= 1
 
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, radius, color, direction, speed, damage, player, group):
+        super().__init__(*group)
+        self.image = pygame.Surface([radius * 2, radius * 2])
+        pygame.draw.circle(self.image, pygame.Color(color), (radius, radius), radius)
+        self.rect = pygame.Rect(x, y, radius * 2, radius * 2)
+        # direction = +- 1
+        self.direct = direction
+        self.speed = speed
+        self.damage = damage
+        if player == 'player':
+            self.target = player_group
+        elif player == 'enemy':
+            self.target = enemies
+
+    def update(self):
+        self.rect.x += self.direct * self.speed * speedPerFrame
+        target = pygame.sprite.spritecollideany(self, self.target)
+        if pygame.sprite.spritecollideany(self, self.target):
+            target.hp -= self.damage
+            self.kill()
+
+
 class HPbar(pygame.sprite.Sprite):
     def __init__(self, player, width, height, groups):
         super().__init__(*groups)
@@ -190,6 +213,7 @@ if __name__ == '__main__':
     player_group = pygame.sprite.Group()
     ground_layer = pygame.sprite.Group()
     enemies = pygame.sprite.Group()
+    bullets = pygame.sprite.Group()
     tools = pygame.sprite.Group()
 
     # input this blok in restart cheacking
@@ -214,6 +238,7 @@ if __name__ == '__main__':
 
     time = 0
     speedPerFrame = 0
+    last_move = 'right'
 
     while running:
         speedPerFrame = clock.tick(30) / 1000
@@ -269,9 +294,11 @@ if __name__ == '__main__':
                     if event.type == pygame.KEYDOWN:
                         # horizontal move begin
                         if event.key == pygame.K_RIGHT:
+                            last_move = 'right'
                             right_trigger = True
                             left_trigger = False
                         elif event.key == pygame.K_LEFT:
+                            last_move = 'left'
                             right_trigger = False
                             left_trigger = True
                         # horizontal move end
@@ -284,7 +311,12 @@ if __name__ == '__main__':
                         # shop
                         elif event.key == pygame.K_q:
                             shop_trigger = True
-
+                        elif event.key == pygame.K_y:
+                            if last_move == 'right':
+                                d = 1
+                            else:
+                                d = -1
+                            Bullet(player.rect.x + player.width // 2, player.rect.y + player.height // 2, 10, 'red', d, 100, 5, 'enemy', [all_sprites, bullets])
 
                     if event.type == pygame.KEYUP:
                         # horizontal move begin
