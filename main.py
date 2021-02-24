@@ -10,18 +10,180 @@ from shop_screen import shopScreen
 # TODO: make a portal
 # TODO: camera
 
+class MainTower(pygame.sprite.Sprite):
+    def __init__(self, x, y, width, height, hp, group, all_sprites, tools):
+        super().__init__(*group)
+        self.image = pygame.Surface([width, height])
+        self.image.fill((0, 0, 255))
+        self.rect = pygame.Rect(x, y, width, height)
+        self.hp = hp
+        self.width = width
+        self.height = height
+        self.MainTowerHPbar = HPbar(self, 500, 20, [all_sprites, tools])
+        self.damage = 0
+
+    def update(self):
+        global collisionClock
+
+        if collisionClock >= 5:
+            for enemy in pygame.sprite.spritecollide(self, enemies, False):
+                enemy.hp -= self.damage
+                if enemy.hp <= 0:
+                    enemy.hpBar.kill()
+                    enemy.kill()
+                    money.amount += 1
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self, x, y, width, height, hp, group, all_sprites, tools):
+        super().__init__(*group)
+        self.image = pygame.Surface([width, height])
+        self.image.fill((255, 0, 0))
+        self.rect = pygame.Rect(x, y, width, height)
+        self.vx = 0
+        self.vy = 0
+        self.isGrounded = False
+        self.hp = hp
+        self.PlayerHPbar = HPbar(self, 100, 10, [all_sprites, tools])
+        self.width = width
+        self.height = height
+
+    def hit(self):
+        global money
+        for enemy in pygame.sprite.spritecollide(self, enemies, False):
+            enemy.hp -= 1
+            if enemy.hp <= 0:
+                enemy.hpBar.kill()
+                enemy.kill()
+                money.amount += 1
+
+
+    def update(self):
+        if pygame.sprite.spritecollideany(self, ground_layer):
+            self.isGrounded = True
+            if self.vy <= 0:
+                self.rect = self.rect.move(self.vx, self.vy)
+            else:
+                self.rect = self.rect.move(self.vx, 0)
+
+        else:
+            self.isGrounded = False
+            self.rect = self.rect.move(self.vx, self.vy)
+
+
+
+class Ground(pygame.sprite.Sprite):
+    def __init__(self, width, height, *group):
+        super().__init__(*group)
+        self.image = pygame.Surface([width, 5])
+        self.image.fill((255, 255, 255))
+        self.rect = pygame.Rect(0, height//5*4, width, 5)
+
+    def update(self):
+        pass
+
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, x,y, width, height, player, group, all_sprites, tools):
+        global speedPerFrame
+
+        super().__init__(*group)
+        self.image = pygame.Surface([width, height])
+        self.image.fill((0, 255, 0))
+        self.rect = pygame.Rect(x-width, y-height, width*2, height*2)
+        self.vx = 0
+        self.vy = 300 * speedPerFrame
+        self.player = player
+
+        self.hp = 10
+        self.hpBar = HPbar(self, width, 10, [all_sprites, tools])
+        self.width = width
+        self.height = height
+
+    def EnemyAI(self):
+        global speedPerFrame
+
+        if self.player.rect.x + self.player.width//2 > self.rect.x:
+            self.vx = 100 * speedPerFrame
+        elif self.player.rect.x + self.player.width//2 < self.rect.x:
+            self.vx = -100 * speedPerFrame
+        else:
+            self.vx = 0
+        self.rect = self.rect.move(self.vx, 0)
+
+    def update(self):
+        global collisionClock
+        if pygame.sprite.spritecollideany(self, ground_layer):
+            self.EnemyAI()
+        else:
+            self.rect = self.rect.move(self.vx, self.vy)
+
+        if collisionClock >= 5:
+            if pygame.sprite.spritecollideany(self, player_group):
+                player.hp -= 1
+            if pygame.sprite.spritecollideany(self, maintowergroup):
+                mainTower.hp -= 1
+
+
+class HPbar(pygame.sprite.Sprite):
+    def __init__(self, player, width, height, groups):
+        super().__init__(*groups)
+        self.image = pygame.Surface([width, height])
+        self.rect = pygame.Rect(player.rect.x - width // 2, player.rect.y - height, width, height)
+        self.player = player
+        self.hp_beg = player.hp
+        self.hp = player.hp
+        self.width = width
+        self.height = height
+
+    def update(self):
+        self.rect = pygame.Rect(self.player.rect.x - self.width // 2 + self.player.width // 2, self.player.rect.y - self.height*2, self.width, self.height)
+        self.hp = self.player.hp
+        self.image.fill((255, 255, 255))
+        pygame.draw.rect(self.image, pygame.Color((255, 0, 0)), [(1, 1), (self.width*int(self.hp)/self.hp_beg, height-2)], width=0)
+
+
+class Money(pygame.sprite.Sprite):
+    def __init__(self, groups):
+        super().__init__(*groups)
+        self.image = pygame.Surface([500, 35])
+        self.rect = pygame.Rect(50, 50, 100, 15)
+        self.font = pygame.font.Font(None, 30)
+        self.amount = 0
+
+    def update(self):
+
+        text = self.font.render(f"Your balance: {self.amount}", True, (200, 200, 200))
+        text_x = 0
+        text_y = 0
+        text_w = text.get_width()
+        text_h = text.get_height()
+        self.image.fill((0, 0, 0))
+        self.image.blit(text, (text_x, text_y))
+
+
+def newWave(typesOfEnemies):
+    global waves
+    waves+= 1
+    for i in range(waves):
+        enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
+        if enemy == 'goblin':
+            enemy = Enemy(random.randrange(0, width-50), 600, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
+        elif enemy == 'giant':
+            enemy = Enemy(random.randrange(0, width-50), 600, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
+
+
 if __name__ == '__main__':
     pygame.init()
     size = width, height = 1200, 800
+
     screen = pygame.display.set_mode(size)
-
     clock = pygame.time.Clock()
-    running = True
 
+    running = True
     player_position = [width//2, height//2]
     horizontall_speed = 200
-    vertical_speed = 500
 
+    vertical_speed = 500
     all_sprites = pygame.sprite.Group()
     shop_group = pygame.sprite.Group()
     maintowergroup = pygame.sprite.Group()
@@ -30,172 +192,10 @@ if __name__ == '__main__':
     enemies = pygame.sprite.Group()
     tools = pygame.sprite.Group()
 
-
-    class MainTower(pygame.sprite.Sprite):
-        def __init__(self, x, y, width, height, hp, group):
-            super().__init__(*group)
-            self.image = pygame.Surface([width, height])
-            self.image.fill((0, 0, 255))
-            self.rect = pygame.Rect(x, y, width, height)
-            self.hp = hp
-            self.width = width
-            self.height = height
-            self.MainTowerHPbar = HPbar(self, 500, 20, [all_sprites, tools])
-            self.damage = 0
-
-        def update(self):
-            global collisionClock
-
-            if collisionClock >= 5:
-                for enemy in pygame.sprite.spritecollide(self, enemies, False):
-                    enemy.hp -= self.damage
-                    if enemy.hp <= 0:
-                        enemy.hpBar.kill()
-                        enemy.kill()
-                        money.amount += 1
-
-    class Player(pygame.sprite.Sprite):
-        def __init__(self, x, y, width, height, hp, group):
-            super().__init__(*group)
-            self.image = pygame.Surface([width, height])
-            self.image.fill((255, 0, 0))
-            self.rect = pygame.Rect(x, y, width, height)
-            self.vx = 0
-            self.vy = 0
-            self.isGrounded = False
-            self.hp = hp
-            self.PlayerHPbar = HPbar(self, 100, 10, [all_sprites, tools])
-            self.width = width
-            self.height = height
-
-        def hit(self):
-            global money
-            for enemy in pygame.sprite.spritecollide(self, enemies, False):
-                enemy.hp -= 1
-                if enemy.hp <= 0:
-                    enemy.hpBar.kill()
-                    enemy.kill()
-                    money.amount += 1
-
-
-        def update(self):
-            if pygame.sprite.spritecollideany(self, ground_layer):
-                self.isGrounded = True
-                if self.vy <= 0:
-                    self.rect = self.rect.move(self.vx, self.vy)
-                else:
-                    self.rect = self.rect.move(self.vx, 0)
-
-            else:
-                self.isGrounded = False
-                self.rect = self.rect.move(self.vx, self.vy)
-
-    class Ground(pygame.sprite.Sprite):
-        def __init__(self, width, height, *group):
-            super().__init__(*group)
-            self.image = pygame.Surface([width, 5])
-            self.image.fill((255, 255, 255))
-            self.rect = pygame.Rect(0, height//5*4, width, 5)
-
-        def update(self):
-            pass
-
-
-    class Enemy(pygame.sprite.Sprite):
-        def __init__(self, x,y, width, height, player, group):
-            global speedPerFrame
-
-            super().__init__(*group)
-            self.image = pygame.Surface([width, height])
-            self.image.fill((0, 255, 0))
-            self.rect = pygame.Rect(x-width, y-height, width*2, height*2)
-            self.vx = 0
-            self.vy = 300 * speedPerFrame
-            self.player = player
-
-            self.hp = 10
-            self.hpBar = HPbar(self, width, 10, [all_sprites, tools])
-            self.width = width
-            self.height = height
-
-        def EnemyAI(self):
-            global speedPerFrame
-
-            if self.player.rect.x + self.player.width//2 > self.rect.x:
-                self.vx = 100 * speedPerFrame
-            elif self.player.rect.x + self.player.width//2 < self.rect.x:
-                self.vx = -100 * speedPerFrame
-            else:
-                self.vx = 0
-            self.rect = self.rect.move(self.vx, 0)
-
-        def update(self):
-            global collisionClock
-            if pygame.sprite.spritecollideany(self, ground_layer):
-                self.EnemyAI()
-            else:
-                self.rect = self.rect.move(self.vx, self.vy)
-
-            if collisionClock >= 5:
-                if pygame.sprite.spritecollideany(self, player_group):
-                    player.hp -= 1
-                if pygame.sprite.spritecollideany(self, maintowergroup):
-                    mainTower.hp -= 1
-
-
-
-    class HPbar(pygame.sprite.Sprite):
-        def __init__(self, player, width, height, groups):
-            super().__init__(*groups)
-            self.image = pygame.Surface([width, height])
-            self.rect = pygame.Rect(player.rect.x - width // 2, player.rect.y - height, width, height)
-            self.player = player
-            self.hp_beg = player.hp
-            self.hp = player.hp
-            self.width = width
-            self.height = height
-
-        def update(self):
-            self.rect = pygame.Rect(self.player.rect.x - self.width // 2 + self.player.width // 2, self.player.rect.y - self.height*2, self.width, self.height)
-            self.hp = self.player.hp
-            self.image.fill((255, 255, 255))
-            pygame.draw.rect(self.image, pygame.Color((255, 0, 0)), [(1, 1), (self.width*int(self.hp)/self.hp_beg, height-2)], width=0)
-
-
-    class Money(pygame.sprite.Sprite):
-        def __init__(self, groups):
-            super().__init__(*groups)
-            self.image = pygame.Surface([500, 35])
-            self.rect = pygame.Rect(50, 50, 100, 15)
-            self.font = pygame.font.Font(None, 30)
-            self.amount = 0
-
-        def update(self):
-
-            text = self.font.render(f"Your balance: {self.amount}", True, (200, 200, 200))
-            text_x = 0
-            text_y = 0
-            text_w = text.get_width()
-            text_h = text.get_height()
-            self.image.fill((0, 0, 0))
-            self.image.blit(text, (text_x, text_y))
-
-
-    def newWave(typesOfEnemies):
-        global waves
-        waves+= 1
-        for i in range(waves):
-            enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
-            if enemy == 'goblin':
-                enemy = Enemy(random.randrange(0, width-50), 600, 30, 30, player, [all_sprites, enemies])
-            elif enemy == 'giant':
-                enemy = Enemy(random.randrange(0, width-50), 600, 50, 50, mainTower, [all_sprites, enemies])
-
-
     # input this blok in restart cheacking
     money = Money([all_sprites, tools])
-    mainTower = MainTower(width//8*3, height//4, width//4, height//2, 1000, [all_sprites, maintowergroup])
-    player = Player(player_position[0], player_position[1], 20, 50, 100, [all_sprites, player_group])
+    mainTower = MainTower(width//8*3, height//4, width//4, height//2, 1000, [all_sprites, maintowergroup], all_sprites, tools)
+    player = Player(player_position[0], player_position[1], 20, 50, 100, [all_sprites, player_group], all_sprites, tools)
     ground = Ground(width, height, [all_sprites, ground_layer])
     shop = shopScreen(width, height, [shop_group], money)
 
@@ -207,7 +207,7 @@ if __name__ == '__main__':
     right_trigger = False
     left_trigger = False
     jump_trigger = False
-    condition_trigger = -1
+    condition_trigger = 2
     shop_trigger = False
 
     collisionClock = 0
@@ -245,9 +245,9 @@ if __name__ == '__main__':
 
                         money = Money([all_sprites, tools])
                         mainTower = MainTower(width // 8 * 3, height // 4, width // 4, height // 2, 1000,
-                                              [all_sprites, maintowergroup])
+                                              [all_sprites, maintowergroup], all_sprites, tools)
                         player = Player(player_position[0], player_position[1], 20, 50, 100,
-                                        [all_sprites, player_group])
+                                        [all_sprites, player_group], all_sprites, tools)
                         ground = Ground(width, height, [all_sprites, ground_layer])
                         shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
@@ -384,9 +384,9 @@ if __name__ == '__main__':
 
                         money = Money([all_sprites, tools])
                         mainTower = MainTower(width // 8 * 3, height // 4, width // 4, height // 2, 1000,
-                                              [all_sprites, maintowergroup])
+                                              [all_sprites, maintowergroup], all_sprites, tools)
                         player = Player(player_position[0], player_position[1], 20, 50, 100,
-                                        [all_sprites, player_group])
+                                        [all_sprites, player_group], all_sprites, tools)
                         ground = Ground(width, height, [all_sprites, ground_layer])
                         shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
