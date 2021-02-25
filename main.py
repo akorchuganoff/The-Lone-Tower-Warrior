@@ -72,11 +72,11 @@ class Player(pygame.sprite.Sprite):
 
 
 class Ground(pygame.sprite.Sprite):
-    def __init__(self, width, height, *group):
+    def __init__(self, x, y, width, group):
         super().__init__(*group)
         self.image = pygame.Surface([width, 5])
         self.image.fill((255, 255, 255))
-        self.rect = pygame.Rect(0, height//5*4, width, 5)
+        self.rect = pygame.Rect(x, y, width, 5)
 
     def update(self):
         pass
@@ -161,6 +161,17 @@ class Money(pygame.sprite.Sprite):
         self.image.blit(text, (text_x, text_y))
 
 
+class Portal(pygame.sprite.Sprite):
+    def __init__(self, groups):
+        super().__init__(*groups)
+        self.image = pygame.Surface([100, 100])
+        self.rect = pygame.Rect(150, 350, 100, 100)
+        self.image.fill((255, 255, 255))
+
+    def update(self):
+        pass
+
+
 def newWave(typesOfEnemies):
     global waves
     waves+= 1
@@ -191,14 +202,17 @@ if __name__ == '__main__':
     ground_layer = pygame.sprite.Group()
     enemies = pygame.sprite.Group()
     tools = pygame.sprite.Group()
+    portal_group = pygame.sprite.Group()
 
     # input this blok in restart cheacking
     money = Money([all_sprites, tools])
     mainTower = MainTower(width//8*3, height//4, width//4, height//2, 1000, [all_sprites, maintowergroup], all_sprites, tools)
     player = Player(player_position[0], player_position[1], 20, 50, 100, [all_sprites, player_group], all_sprites, tools)
-    ground = Ground(width, height, [all_sprites, ground_layer])
+    ground = Ground(0, height//5*4, width, [all_sprites, ground_layer])
+    groundToPortal_1 = Ground(0, height//16*11  , width//8, [all_sprites, ground_layer])
+    groundToPortal_2 = Ground(width//8, height // 8 * 5, width // 8*2, [all_sprites, ground_layer])
     shop = shopScreen(width, height, [shop_group], money)
-
+    portal = Portal([all_sprites, portal_group])
     waves = 0
     typesOfEnemies = ['goblin', 'giant']
     # end of block
