@@ -6,6 +6,7 @@ from dead_screen import deadScreen
 from logo_screen import logo
 from menu_screen import menuScreen
 from shop_screen import shopScreen
+from PortalClass import Portal
 
 # TODO: make a portal
 # TODO: camera
@@ -159,17 +160,6 @@ class Money(pygame.sprite.Sprite):
         text_h = text.get_height()
         self.image.fill((0, 0, 0))
         self.image.blit(text, (text_x, text_y))
-
-
-class Portal(pygame.sprite.Sprite):
-    def __init__(self, groups):
-        super().__init__(*groups)
-        self.image = pygame.Surface([100, 100])
-        self.rect = pygame.Rect(150, 350, 100, 100)
-        self.image.fill((255, 255, 255))
-
-    def update(self):
-        pass
 
 
 def newWave(typesOfEnemies):
