@@ -8,7 +8,6 @@ from menu_screen import menuScreen
 from shop_screen import shopScreen
 from PortalClass import Portal
 
-# TODO: make a portal
 # TODO: camera
 
 class MainTower(pygame.sprite.Sprite):
