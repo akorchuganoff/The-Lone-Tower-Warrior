@@ -23,7 +23,7 @@ class MainTower(pygame.sprite.Sprite):
         self.damage = 0
 
     def update(self):
-        if collisionClock >= 5:
+        if collisionClock % 5 == 0:
             for enemy in pygame.sprite.spritecollide(self, enemies, False):
                 enemy.hp -= self.damage
 
@@ -104,7 +104,7 @@ class Enemy(pygame.sprite.Sprite):
             self.EnemyAI()
         else:
             self.rect = self.rect.move(self.vx, self.vy)
-        if collisionClock >= 5:
+        if collisionClock % 5 == 0:
             if pygame.sprite.spritecollideany(self, player_group):
                 player.hp -= 1
             if pygame.sprite.spritecollideany(self, maintowergroup):
@@ -136,6 +136,29 @@ class Boss(Enemy):
             return
         if not pygame.sprite.spritecollideany(self, ground_layer):
             self.rect.y += 300 * speedPerFrame
+
+
+class FireBoss(Boss):
+    def update(self):
+        if self.hp <= 0:
+            money.amount += 100
+            self.hpBar.kill()
+            self.kill()
+            return
+        if not pygame.sprite.spritecollideany(self, ground_layer):
+            self.rect.y += 300 * speedPerFrame
+        if collisionClock % 75 == 59:
+            if player.rect.x < self.rect.x + self.rect.width // 2:
+                d = - 1
+            else:
+                d = 1
+            Bullet(self.rect.x + self.width // 2,
+                   self.rect.y + self.height // 2, 20, 'pink',
+                   d, 400, 10, 'player', [bullets, all_boss_sprites])
+        if collisionClock % 5 == 0:
+            if pygame.sprite.spritecollideany(self, player_group):
+                player.hp -= 1
+
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -324,9 +347,9 @@ if __name__ == '__main__':
                                    d, 200, 5, 'enemy', [all_sprites, bullets, all_boss_sprites])
 
                         elif event.key == pygame.K_z:
-                            name = 'Босс 1'
+                            name = 'FireBoss'
                             player.rect.x = 50
-                            boss = Boss(width - 200, height // 8 * 4, 100, 100, player,
+                            boss = FireBoss(width - 200, height // 8 * 4, 100, 100, player,
                                  [all_boss_sprites, boss_group], all_boss_sprites, tools, name, 300)
                             condition_trigger = 4
 
@@ -444,6 +467,8 @@ if __name__ == '__main__':
                         for elem in boss_group:
                             elem.hpBar.kill()
                             elem.kill()
+                        for elem in bullets:
+                            elem.kill()
                         condition_trigger = 2
                     elif event.key == pygame.K_q:
                         shop_trigger = True
@@ -487,8 +512,6 @@ if __name__ == '__main__':
 
         collisionClock += 1
         time += speedPerFrame
-        if collisionClock >= 6:
-            collisionClock = 0
 
         print("\rFPS:", clock.get_fps(), end='')
         pygame.display.flip()
