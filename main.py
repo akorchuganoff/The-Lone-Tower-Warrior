@@ -502,6 +502,7 @@ if __name__ == '__main__':
                                 player.rect.y + player.height // 2, 10, 'red',
                                 d, 200, 5, 'boss', [all_sprites, bullets, all_boss_sprites])
                     elif event.key == pygame.K_z:
+                        player.rect.x = mainTower.rect.x + mainTower.rect.width // 2
                         for elem in boss_group:
                             elem.hpBar.kill()
                             elem.kill()
@@ -521,6 +522,7 @@ if __name__ == '__main__':
                     player.hit()
 
             if boss.hp <= 0:
+                player.rect.x = mainTower.rect.x + mainTower.rect.width // 2
                 for elem in boss_group:
                     elem.hpBar.kill()
                     elem.kill()
