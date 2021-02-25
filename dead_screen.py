@@ -11,7 +11,7 @@ def deadScreen(screen, width, height):
     screen.blit(text, (text_x, text_y))
     pygame.draw.rect(screen, pygame.Color((255, 255, 255)), [width // 4, height // 4, width // 2, height // 2], width=5)
 
-    restart_text = font.render("Restart", True, (100, 100, 100))
+    restart_text = font.render("Menu", True, (100, 100, 100))
     restart_text_x = width // 8 * 3 - restart_text.get_width() // 2
     restart_text_y = height // 8 * 5 - restart_text.get_height() // 2
     restart_text_w = restart_text.get_width()

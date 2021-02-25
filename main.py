@@ -23,15 +23,10 @@ class MainTower(pygame.sprite.Sprite):
         self.damage = 0
 
     def update(self):
-        global collisionClock
-
         if collisionClock >= 5:
             for enemy in pygame.sprite.spritecollide(self, enemies, False):
                 enemy.hp -= self.damage
-                if enemy.hp <= 0:
-                    enemy.hpBar.kill()
-                    enemy.kill()
-                    money.amount += 1
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, hp, group, all_sprites, tools):
@@ -48,14 +43,8 @@ class Player(pygame.sprite.Sprite):
         self.height = height
 
     def hit(self):
-        global money
         for enemy in pygame.sprite.spritecollide(self, enemies, False):
             enemy.hp -= 1
-            if enemy.hp <= 0:
-                enemy.hpBar.kill()
-                enemy.kill()
-                money.amount += 1
-
 
     def update(self):
         if pygame.sprite.spritecollideany(self, ground_layer):
@@ -64,11 +53,9 @@ class Player(pygame.sprite.Sprite):
                 self.rect = self.rect.move(self.vx, self.vy)
             else:
                 self.rect = self.rect.move(self.vx, 0)
-
         else:
             self.isGrounded = False
             self.rect = self.rect.move(self.vx, self.vy)
-
 
 
 class Ground(pygame.sprite.Sprite):
@@ -84,8 +71,6 @@ class Ground(pygame.sprite.Sprite):
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x,y, width, height, player, group, all_sprites, tools):
-        global speedPerFrame
-
         super().__init__(*group)
         self.image = pygame.Surface([width, height])
         self.image.fill((0, 255, 0))
@@ -93,15 +78,12 @@ class Enemy(pygame.sprite.Sprite):
         self.vx = 0
         self.vy = 300 * speedPerFrame
         self.player = player
-
         self.hp = 10
         self.hpBar = HPbar(self, width, 10, [all_sprites, tools])
         self.width = width
         self.height = height
 
     def EnemyAI(self):
-        global speedPerFrame
-
         if self.player.rect.x + self.player.width//2 > self.rect.x:
             self.vx = 100 * speedPerFrame
         elif self.player.rect.x + self.player.width//2 < self.rect.x:
@@ -111,12 +93,15 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.rect.move(self.vx, 0)
 
     def update(self):
-        global collisionClock
+        if self.hp <= 0:
+            money.amount += 1
+            self.hpBar.kill()
+            self.kill()
+            return
         if pygame.sprite.spritecollideany(self, ground_layer):
             self.EnemyAI()
         else:
             self.rect = self.rect.move(self.vx, self.vy)
-
         if collisionClock >= 5:
             if pygame.sprite.spritecollideany(self, player_group):
                 player.hp -= 1
@@ -174,7 +159,6 @@ class Money(pygame.sprite.Sprite):
         self.amount = 0
 
     def update(self):
-
         text = self.font.render(f"Your balance: {self.amount}", True, (200, 200, 200))
         text_x = 0
         text_y = 0
@@ -186,7 +170,7 @@ class Money(pygame.sprite.Sprite):
 
 def newWave(typesOfEnemies):
     global waves
-    waves+= 1
+    waves += 1
     for i in range(waves):
         enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
         if enemy == 'goblin':
@@ -198,47 +182,19 @@ def newWave(typesOfEnemies):
 if __name__ == '__main__':
     pygame.init()
     size = width, height = 1200, 800
-
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
 
     running = True
-    player_position = [width//2, height//2]
+    player_position = [width // 2, height // 2]
     horizontall_speed = 200
-
     vertical_speed = 500
-    all_sprites = pygame.sprite.Group()
-    shop_group = pygame.sprite.Group()
-    maintowergroup = pygame.sprite.Group()
-    player_group = pygame.sprite.Group()
-    ground_layer = pygame.sprite.Group()
-    enemies = pygame.sprite.Group()
-    bullets = pygame.sprite.Group()
-    tools = pygame.sprite.Group()
 
-    # input this blok in restart cheacking
-    money = Money([all_sprites, tools])
-    mainTower = MainTower(width//8*3, height//4, width//4, height//2, 1000, [all_sprites, maintowergroup], all_sprites, tools)
-    player = Player(player_position[0], player_position[1], 20, 50, 100, [all_sprites, player_group], all_sprites, tools)
-    ground = Ground(width, height, [all_sprites, ground_layer])
-    shop = shopScreen(width, height, [shop_group], money)
-
-    waves = 0
     typesOfEnemies = ['goblin', 'giant']
-    # end of block
 
-    # movement triggers
-    right_trigger = False
-    left_trigger = False
-    jump_trigger = False
-    condition_trigger = 2
-    shop_trigger = False
-
+    condition_trigger = -1
     collisionClock = 0
-
     time = 0
-    speedPerFrame = 0
-    last_move = 'right'
 
     while running:
         speedPerFrame = clock.tick(30) / 1000
@@ -256,16 +212,18 @@ if __name__ == '__main__':
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = event.pos
                     start_pos, continue_pos, stats_pos = menuScreen(screen, width, height)
-                    if start_pos[0]<=x<=start_pos[2] and start_pos[1]<=y<=start_pos[3]:
+                    if start_pos[0] <= x <= start_pos[2] and start_pos[1] <= y <= start_pos[3]:
                         print('start')
                         condition_trigger = 2
 
                         # start game
                         all_sprites = pygame.sprite.Group()
+                        shop_group = pygame.sprite.Group()
                         maintowergroup = pygame.sprite.Group()
                         player_group = pygame.sprite.Group()
                         ground_layer = pygame.sprite.Group()
                         enemies = pygame.sprite.Group()
+                        bullets = pygame.sprite.Group()
                         tools = pygame.sprite.Group()
 
                         money = Money([all_sprites, tools])
@@ -276,13 +234,16 @@ if __name__ == '__main__':
                         ground = Ground(width, height, [all_sprites, ground_layer])
                         shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
-                        typesOfEnemies = ['goblin', 'giant']
-
-                    elif continue_pos[0]<=x<=continue_pos[2] and continue_pos[1]<=y<=continue_pos[3]:
+                        # movement triggers
+                        right_trigger = False
+                        left_trigger = False
+                        jump_trigger = False
+                        shop_trigger = False
+                        last_move = 'right'
+                    elif continue_pos[0] <= x <= continue_pos[2] and continue_pos[1] <= y <= continue_pos[3]:
                         print('continue')
-                    elif stats_pos[0]<=x<=stats_pos[2] and stats_pos[1]<=y<=stats_pos[3]:
+                    elif stats_pos[0] <= x <= stats_pos[2] and stats_pos[1] <= y <= stats_pos[3]:
                         print('stats')
-
             menuScreen(screen, width, height)
 
         elif condition_trigger == 2:
@@ -316,8 +277,9 @@ if __name__ == '__main__':
                                 d = 1
                             else:
                                 d = -1
-                            Bullet(player.rect.x + player.width // 2, player.rect.y + player.height // 2, 10, 'red', d, 100, 5, 'enemy', [all_sprites, bullets])
-
+                            Bullet(player.rect.x + player.width // 2,
+                                   player.rect.y + player.height // 2, 10, 'red',
+                                   d, 200, 5, 'enemy', [all_sprites, bullets])
                     if event.type == pygame.KEYUP:
                         # horizontal move begin
                         if event.key == pygame.K_RIGHT:
@@ -364,17 +326,13 @@ if __name__ == '__main__':
                 # Main act
                 all_sprites.draw(screen)
                 all_sprites.update()
-
             else:
-
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
-
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_q:
                             shop_trigger = False
-
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         x, y = event.pos
                         xr, yr, xl, yl = shop.update()
@@ -384,50 +342,25 @@ if __name__ == '__main__':
                             if shop.money.amount >= shop.price:
                                 shop.buy(mainTower)
                                 print('buy')
-
                             else:
                                 pass
-
                 shop_group.draw(screen)
                 shop_group.update()
 
         elif condition_trigger == 3:
+            for elem in all_sprites:
+                elem.kill()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     pos = event.pos
                     rx, ry, rw, rh, qx, qy, qw, qh = deadScreen(screen, width, height)
                     # restart checking
                     if rx <= pos[0] <= rx + rw and ry <= pos[1] <= ry + rh:
-                        condition_trigger = 2
-
-                        for elem in all_sprites:
-                            elem.kill()
-
-                        # start game
-                        all_sprites = pygame.sprite.Group()
-                        maintowergroup = pygame.sprite.Group()
-                        player_group = pygame.sprite.Group()
-                        ground_layer = pygame.sprite.Group()
-                        enemies = pygame.sprite.Group()
-                        tools = pygame.sprite.Group()
-
-                        money = Money([all_sprites, tools])
-                        mainTower = MainTower(width // 8 * 3, height // 4, width // 4, height // 2, 1000,
-                                              [all_sprites, maintowergroup], all_sprites, tools)
-                        player = Player(player_position[0], player_position[1], 20, 50, 100,
-                                        [all_sprites, player_group], all_sprites, tools)
-                        ground = Ground(width, height, [all_sprites, ground_layer])
-                        shop = shopScreen(width, height, [shop_group], money)
-                        waves = 0
-                        typesOfEnemies = ['goblin', 'giant']
-
-                    # quit
+                        condition_trigger = 0
                     if qx <= pos[0] <= qx + qw and qy <= pos[1] <= qy + qh:
                         running = False
-
             deadScreen(screen, width, height)
 
         collisionClock += 1
