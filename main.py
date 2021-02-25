@@ -6,8 +6,8 @@ from dead_screen import deadScreen
 from logo_screen import logo
 from menu_screen import menuScreen
 from shop_screen import shopScreen
+from PortalClass import Portal
 
-# TODO: make a portal
 # TODO: camera
 
 class MainTower(pygame.sprite.Sprite):
@@ -61,11 +61,11 @@ class Player(pygame.sprite.Sprite):
 
 
 class Ground(pygame.sprite.Sprite):
-    def __init__(self, width, height, *group):
+    def __init__(self, x, y, width, group):
         super().__init__(*group)
         self.image = pygame.Surface([width, 5])
         self.image.fill((255, 255, 255))
-        self.rect = pygame.Rect(0, height//5*4, width, 5)
+        self.rect = pygame.Rect(x, y, width, 5)
 
     def update(self):
         pass
@@ -76,7 +76,7 @@ class Enemy(pygame.sprite.Sprite):
         super().__init__(*group)
         self.image = pygame.Surface([width, height])
         self.image.fill((0, 255, 0))
-        self.rect = pygame.Rect(x-width, y-height, width*2, height*2)
+        self.rect = pygame.Rect(x, y, width, height)
         self.vx = 0
         self.vy = 300 * speedPerFrame
         self.player = player
@@ -239,11 +239,30 @@ def newWave(typesOfEnemies):
     waves += 1
     for i in range(waves):
         enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
+        x = random.randrange(ground.rect.x, ground.rect.x + ground.rect.width-50, 1)
         if enemy == 'goblin':
-            enemy = Enemy(random.randrange(0, width-50), 600, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
+            enemy = Enemy(x, ground.rect.y-100, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
         elif enemy == 'giant':
-            enemy = Enemy(random.randrange(0, width-50), 600, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
+            enemy = Enemy(x, ground.rect.y-100, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
 
+        print(x, ground.rect.x, )
+
+
+class Camera:
+    # зададим начальный сдвиг камеры
+    def __init__(self):
+        self.dx = 0
+        self.dy = 0
+
+    # сдвинуть объект obj на смещение камеры
+    def apply(self, obj):
+        obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    # позиционировать камеру на объекте target
+    def update(self, target):
+        self.dx = -(target.rect.x + target.rect.w // 2 - width // 4)
+        self.dy = -(target.rect.y + target.rect.h // 2 - height // 4*3)
 
 if __name__ == '__main__':
     pygame.init()
@@ -261,6 +280,8 @@ if __name__ == '__main__':
     condition_trigger = -1
     collisionClock = 0
     time = 0
+
+    camera = Camera()
 
     while running:
         speedPerFrame = clock.tick(30) / 1000
@@ -399,6 +420,11 @@ if __name__ == '__main__':
                 screen.fill((0, 0, 0))
                 all_sprites.draw(screen)
                 all_sprites.update()
+
+                camera.update(player)
+                for sprite in all_sprites:
+                    camera.apply(sprite)
+
             else:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -432,6 +458,8 @@ if __name__ == '__main__':
                     # restart checking
                     if rx <= pos[0] <= rx + rw and ry <= pos[1] <= ry + rh:
                         condition_trigger = 0
+                    
+                    # quit
                     if qx <= pos[0] <= qx + qw and qy <= pos[1] <= qy + qh:
                         running = False
             deadScreen(screen, width, height)
@@ -513,6 +541,6 @@ if __name__ == '__main__':
         collisionClock += 1
         time += speedPerFrame
 
-        print("\rFPS:", clock.get_fps(), end='')
+        # print("\rFPS:", clock.get_fps(), end='')
         pygame.display.flip()
     pygame.quit()
