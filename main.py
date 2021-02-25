@@ -8,7 +8,7 @@ from menu_screen import menuScreen
 from shop_screen import shopScreen
 from PortalClass import Portal
 
-# TODO: camera
+# TODO:
 
 class MainTower(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, hp, group, all_sprites, tools):
@@ -314,15 +314,25 @@ if __name__ == '__main__':
                         enemies = pygame.sprite.Group()
                         bullets = pygame.sprite.Group()
                         tools = pygame.sprite.Group()
+                        portal_group = pygame.sprite.Group()
 
                         money = Money([all_sprites, tools])
                         mainTower = MainTower(width // 8 * 3, height // 4, width // 4, height // 2, 1000,
                                               [all_sprites, maintowergroup], all_sprites, tools)
                         player = Player(player_position[0], player_position[1], 20, 50, 100,
                                         [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
-                        ground = Ground(width, height, [all_sprites, ground_layer, all_boss_sprites])
+                        ground = Ground(0, height//4*3, width, [all_sprites, ground_layer])
                         shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
+                        # portal way
+                        portal = Portal([all_sprites, portal_group])
+                        portalstairs_1 = Ground(1000, height // 4 * 1.5, 200, [all_sprites, ground_layer])
+                        portalstairs_2 = Ground(1000, height // 4 * 2, 200, [all_sprites, ground_layer])
+                        portalstairs_3 = Ground(1000, height // 4 * 2.5, 200, [all_sprites, ground_layer])
+                        portalstairs_4 = Ground(1000, height // 4 * 3, 200, [all_sprites, ground_layer])
+
+
+
                         # movement triggers
                         right_trigger = False
                         left_trigger = False
@@ -367,16 +377,17 @@ if __name__ == '__main__':
                                    player.rect.y + player.height // 2, 10, 'red',
                                    d, 200, 5, 'enemy', [all_sprites, bullets, all_boss_sprites])
 
-                        elif event.key == pygame.K_z:
+                        elif event.key == pygame.K_z and pygame.sprite.spritecollideany(player, portal_group):
                             name = 'FireBoss'
                             player.rect.x = 50
                             boss = FireBoss(width - 200, height // 8 * 4, 100, 100, player,
                                  [all_boss_sprites, boss_group], all_boss_sprites, tools, name, 300)
+                            boss_ground = Ground(0, height//4*3, width, [all_boss_sprites, ground_layer])
                             condition_trigger = 4
 
                         elif event.key == pygame.K_q:
                             shop_trigger = True
-                    if event.type == pygame.KEYUP:
+                    elif event.type == pygame.KEYUP:
                         # horizontal move begin
                         if event.key == pygame.K_RIGHT:
                             right_trigger = False
@@ -384,7 +395,7 @@ if __name__ == '__main__':
                             left_trigger = False
                         # horizontal move end
 
-                    if event.type == pygame.MOUSEBUTTONDOWN:
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
                         player.hit()
 
                 if player.hp <= 0 or mainTower.hp <= 0:
@@ -413,7 +424,7 @@ if __name__ == '__main__':
                 # vertical move end
 
                 # enemies spawn
-                if int(time) %5 == 0:
+                if int(time) % 5 == 0:
                     time += 1
                     newWave(typesOfEnemies)
                 # Main act
@@ -424,6 +435,7 @@ if __name__ == '__main__':
                 camera.update(player)
                 for sprite in all_sprites:
                     camera.apply(sprite)
+
 
             else:
                 for event in pygame.event.get():
@@ -465,82 +477,112 @@ if __name__ == '__main__':
             deadScreen(screen, width, height)
 
         elif condition_trigger == 4:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                if event.type == pygame.KEYDOWN:
-                    # horizontal move begin
-                    if event.key == pygame.K_RIGHT:
-                        last_move = 'right'
-                        right_trigger = True
-                        left_trigger = False
-                    elif event.key == pygame.K_LEFT:
-                        last_move = 'left'
-                        right_trigger = False
-                        left_trigger = True
-                    # horizontal move end
-                    # vertical move
-                    elif event.key == pygame.K_UP:
-                        jump_trigger = True
-                    # vertical move end
-                    elif event.key == pygame.K_y:
-                        if last_move == 'right':
-                            d = 1
-                        else:
-                            d = -1
-                        Bullet(player.rect.x + player.width // 2,
-                               player.rect.y + player.height // 2, 10, 'red',
-                               d, 200, 5, 'boss', [all_sprites, bullets, all_boss_sprites])
-                    elif event.key == pygame.K_z:
-                        for elem in boss_group:
-                            elem.hpBar.kill()
-                            elem.kill()
-                        for elem in bullets:
-                            elem.kill()
-                        condition_trigger = 2
-                    elif event.key == pygame.K_q:
-                        shop_trigger = True
-                if event.type == pygame.KEYUP:
-                    # horizontal move begin
-                    if event.key == pygame.K_RIGHT:
-                        right_trigger = False
-                    elif event.key == pygame.K_LEFT:
-                        left_trigger = False
-                    # horizontal move end
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    player.hit()
-            if player.hp <= 0 or mainTower.hp <= 0:
-                condition_trigger = 3
-            # horizontal move begin
-            if left_trigger:
-                player.vx = -1 * horizontall_speed * speedPerFrame
-            elif right_trigger:
-                player.vx = horizontall_speed * speedPerFrame
-            else:
-                player.vx = 0
-            # horizontal move end
-            # vertical move begin
-            if jump_trigger:
-                if player.isGrounded:
-                    vertical_speed = -300
-                    player.vy = vertical_speed * speedPerFrame
-                jump_trigger = False
-            else:
-                if vertical_speed >= 300:
-                    vertical_speed = 300
+            if not shop_trigger:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                    elif event.type == pygame.KEYDOWN:
+                        # horizontal move begin
+                        if event.key == pygame.K_RIGHT:
+                            last_move = 'right'
+                            right_trigger = True
+                            left_trigger = False
+                        elif event.key == pygame.K_LEFT:
+                            last_move = 'left'
+                            right_trigger = False
+                            left_trigger = True
+                        # horizontal move end
+                        # vertical move
+                        elif event.key == pygame.K_UP:
+                            jump_trigger = True
+                        # vertical move end
+                        elif event.key == pygame.K_y:
+                            if last_move == 'right':
+                                d = 1
+                            else:
+                                d = -1
+                            Bullet(player.rect.x + player.width // 2,
+                                   player.rect.y + player.height // 2, 10, 'red',
+                                   d, 200, 5, 'boss', [all_sprites, bullets, all_boss_sprites])
+                        elif event.key == pygame.K_z:
+                            for elem in boss_group:
+                                elem.hpBar.kill()
+                                elem.kill()
+                            for elem in bullets:
+                                elem.kill()
+                            for elem in all_boss_sprites:
+                                if elem != player:
+                                    elem.kill()
+                            condition_trigger = 2
+                        elif event.key == pygame.K_q:
+                            shop_trigger = True
+
+                    elif event.type == pygame.KEYUP:
+                        if event.key == pygame.K_RIGHT:
+                            right_trigger = False
+                        elif event.key == pygame.K_LEFT:
+                            left_trigger = False
+
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        player.hit()
+
+                if boss.hp <= 0:
+                    for elem in all_boss_sprites:
+                        elem.kill()
+                    # condition_trigger = 2
+
+                # horizontal move begin
+                if left_trigger:
+                    player.vx = -1 * horizontall_speed * speedPerFrame
+                elif right_trigger:
+                    player.vx = horizontall_speed * speedPerFrame
                 else:
-                    vertical_speed += 20
-                player.vy = vertical_speed * speedPerFrame
-            # vertical move end
-            # Main act
-            screen.fill((0, 0, 0))
-            boss.draw_boss_name()
-            all_boss_sprites.draw(screen)
-            all_boss_sprites.update()
+                    player.vx = 0
+                # horizontal move end
+                # vertical move begin
+                if jump_trigger:
+                    if player.isGrounded:
+                        vertical_speed = -300
+                        player.vy = vertical_speed * speedPerFrame
+                    jump_trigger = False
+                else:
+                    if vertical_speed >= 300:
+                        vertical_speed = 300
+                    else:
+                        vertical_speed += 20
+                    player.vy = vertical_speed * speedPerFrame
+                # vertical move end
+                # Main act
+                screen.fill((0, 0, 0))
+                boss.draw_boss_name()
+                all_boss_sprites.draw(screen)
+                all_boss_sprites.update()
+
+            else:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_q:
+                            shop_trigger = False
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        x, y = event.pos
+                        xr, yr, xl, yl = shop.update()
+                        print(x, y)
+                        print(xr, yr, xl, yl)
+                        if xr <= x-width // 8 <= xl and yr <= y - height // 8 <= yl:
+                            if shop.money.amount >= shop.price:
+                                shop.buy(mainTower)
+                                print('buy')
+                            else:
+                                pass
+                shop_group.draw(screen)
+                shop_group.update()
+
 
         collisionClock += 1
         time += speedPerFrame
 
-        # print("\rFPS:", clock.get_fps(), end='')
+        print("\rFPS:", clock.get_fps(), end='')
         pygame.display.flip()
     pygame.quit()
