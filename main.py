@@ -262,7 +262,7 @@ class Camera:
 
     # позиционировать камеру на объекте target
     def update(self, target):
-        self.dx = -(target.rect.x + target.rect.w // 2 - width // 4)
+        self.dx = -(target.rect.x + target.rect.w // 2 - width // 2)
         self.dy = -(target.rect.y + target.rect.h // 2 - height // 4 * 3)
 
 
@@ -429,8 +429,9 @@ if __name__ == '__main__':
                 all_sprites.update()
 
                 camera.update(player)
-                for sprite in all_sprites:
-                    camera.apply(sprite)
+                for sprite in all_sprites :
+                    if sprite != money:
+                        camera.apply(sprite)
 
             else:
                 for event in pygame.event.get():
