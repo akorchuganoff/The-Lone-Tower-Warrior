@@ -83,13 +83,13 @@ class Ground(pygame.sprite.Sprite):
 
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, x,y, width, height, player, group, all_sprites, tools):
+    def __init__(self, x, y, width, height, player, group, all_sprites, tools):
         global speedPerFrame
 
         super().__init__(*group)
         self.image = pygame.Surface([width, height])
         self.image.fill((0, 255, 0))
-        self.rect = pygame.Rect(x-width, y-height, width*2, height*2)
+        self.rect = pygame.Rect(x, y, width, height)
         self.vx = 0
         self.vy = 300 * speedPerFrame
         self.player = player
@@ -163,14 +163,34 @@ class Money(pygame.sprite.Sprite):
 
 def newWave(typesOfEnemies):
     global waves
-    waves+= 1
+    waves += 1
+
     for i in range(waves):
         enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
+        x = random.randrange(ground.rect.x, ground.rect.x + ground.rect.width-50, 1)
         if enemy == 'goblin':
-            enemy = Enemy(random.randrange(0, width-50), 600, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
+            enemy = Enemy(x, ground.rect.y-100, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
         elif enemy == 'giant':
-            enemy = Enemy(random.randrange(0, width-50), 600, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
+            enemy = Enemy(x, ground.rect.y-100, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
 
+        print(x, ground.rect.x, )
+
+
+class Camera:
+    # зададим начальный сдвиг камеры
+    def __init__(self):
+        self.dx = 0
+        self.dy = 0
+
+    # сдвинуть объект obj на смещение камеры
+    def apply(self, obj):
+        obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    # позиционировать камеру на объекте target
+    def update(self, target):
+        self.dx = -(target.rect.x + target.rect.w // 2 - width // 4)
+        self.dy = -(target.rect.y + target.rect.h // 2 - height // 4*3)
 
 if __name__ == '__main__':
     pygame.init()
@@ -217,6 +237,8 @@ if __name__ == '__main__':
 
     time = 0
     speedPerFrame = 0
+
+    camera = Camera()
 
     while running:
         speedPerFrame = clock.tick(30) / 1000
@@ -336,6 +358,10 @@ if __name__ == '__main__':
                 all_sprites.draw(screen)
                 all_sprites.update()
 
+                camera.update(player)
+                for sprite in all_sprites:
+                    camera.apply(sprite)
+
             else:
 
                 for event in pygame.event.get():
@@ -390,8 +416,12 @@ if __name__ == '__main__':
                                               [all_sprites, maintowergroup], all_sprites, tools)
                         player = Player(player_position[0], player_position[1], 20, 50, 100,
                                         [all_sprites, player_group], all_sprites, tools)
-                        ground = Ground(width, height, [all_sprites, ground_layer])
+                        ground = Ground(0, height // 5 * 4, width, [all_sprites, ground_layer])
+                        groundToPortal_1 = Ground(0, height // 16 * 11, width // 8, [all_sprites, ground_layer])
+                        groundToPortal_2 = Ground(width // 8, height // 8 * 5, width // 8 * 2,
+                                                  [all_sprites, ground_layer])
                         shop = shopScreen(width, height, [shop_group], money)
+                        portal = Portal([all_sprites, portal_group])
                         waves = 0
                         typesOfEnemies = ['goblin', 'giant']
 
@@ -406,6 +436,6 @@ if __name__ == '__main__':
         if collisionClock >= 6:
             collisionClock = 0
 
-        print("\rFPS:", clock.get_fps(), end='')
+        # print("\rFPS:", clock.get_fps(), end='')
         pygame.display.flip()
     pygame.quit()
