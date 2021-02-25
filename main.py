@@ -8,6 +8,7 @@ from menu_screen import menuScreen
 from shop_screen import shopScreen
 from PortalClass import Portal
 
+
 # TODO:
 
 class MainTower(pygame.sprite.Sprite):
@@ -86,9 +87,9 @@ class Enemy(pygame.sprite.Sprite):
         self.height = height
 
     def EnemyAI(self):
-        if self.player.rect.x + self.player.width//2 > self.rect.x:
+        if self.player.rect.x + self.player.width // 2 > self.rect.x:
             self.vx = 100 * speedPerFrame
-        elif self.player.rect.x + self.player.width//2 < self.rect.x:
+        elif self.player.rect.x + self.player.width // 2 < self.rect.x:
             self.vx = -100 * speedPerFrame
         else:
             self.vx = 0
@@ -160,7 +161,6 @@ class FireBoss(Boss):
                 player.hp -= 1
 
 
-
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, radius, color, direction, speed, damage, player, group):
         super().__init__(*group)
@@ -177,7 +177,6 @@ class Bullet(pygame.sprite.Sprite):
             self.target = enemies
         elif player == 'boss':
             self.target = boss_group
-
 
     def update(self):
         self.rect.x += self.direct * self.speed * speedPerFrame
@@ -199,10 +198,12 @@ class HPbar(pygame.sprite.Sprite):
         self.height = height
 
     def update(self):
-        self.rect = pygame.Rect(self.player.rect.x - self.width // 2 + self.player.width // 2, self.player.rect.y - self.height*2, self.width, self.height)
+        self.rect = pygame.Rect(self.player.rect.x - self.width // 2 + self.player.width // 2,
+                                self.player.rect.y - self.height * 2, self.width, self.height)
         self.hp = self.player.hp
         self.image.fill((255, 255, 255))
-        pygame.draw.rect(self.image, pygame.Color((255, 0, 0)), [(1, 1), (self.width*int(self.hp)/self.hp_beg, height-2)], width=0)
+        pygame.draw.rect(self.image, pygame.Color((255, 0, 0)),
+                         [(1, 1), (self.width * int(self.hp) / self.hp_beg, height - 2)], width=0)
 
 
 class Boss_HPbar(HPbar):
@@ -213,7 +214,8 @@ class Boss_HPbar(HPbar):
     def update(self):
         self.hp = self.player.hp
         self.image.fill((255, 255, 255))
-        pygame.draw.rect(self.image, pygame.Color((255, 0, 0)), [(1, 1), (self.width*int(self.hp)/self.hp_beg, height-2)], width=0)
+        pygame.draw.rect(self.image, pygame.Color((255, 0, 0)),
+                         [(1, 1), (self.width * int(self.hp) / self.hp_beg, height - 2)], width=0)
 
 
 class Money(pygame.sprite.Sprite):
@@ -239,11 +241,11 @@ def newWave(typesOfEnemies):
     waves += 1
     for i in range(waves):
         enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
-        x = random.randrange(ground.rect.x, ground.rect.x + ground.rect.width-50, 1)
+        x = random.randrange(ground.rect.x, ground.rect.x + ground.rect.width - 50, 1)
         if enemy == 'goblin':
-            enemy = Enemy(x, ground.rect.y-100, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
+            enemy = Enemy(x, ground.rect.y - 100, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
         elif enemy == 'giant':
-            enemy = Enemy(x, ground.rect.y-100, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
+            enemy = Enemy(x, ground.rect.y - 100, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
 
         print(x, ground.rect.x, )
 
@@ -262,7 +264,8 @@ class Camera:
     # позиционировать камеру на объекте target
     def update(self, target):
         self.dx = -(target.rect.x + target.rect.w // 2 - width // 4)
-        self.dy = -(target.rect.y + target.rect.h // 2 - height // 4*3)
+        self.dy = -(target.rect.y + target.rect.h // 2 - height // 4 * 3)
+
 
 if __name__ == '__main__':
     pygame.init()
@@ -321,18 +324,10 @@ if __name__ == '__main__':
                                               [all_sprites, maintowergroup], all_sprites, tools)
                         player = Player(player_position[0], player_position[1], 20, 50, 100,
                                         [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
-                        ground = Ground(0, height//4*3, width, [all_sprites, ground_layer])
+                        ground = Ground(0, height // 4 * 3, width, [all_sprites, ground_layer])
                         shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
-                        # portal way
                         portal = Portal([all_sprites, portal_group])
-                        portalstairs_1 = Ground(1000, height // 4 * 1.5, 200, [all_sprites, ground_layer])
-                        portalstairs_2 = Ground(1000, height // 4 * 2, 200, [all_sprites, ground_layer])
-                        portalstairs_3 = Ground(1000, height // 4 * 2.5, 200, [all_sprites, ground_layer])
-                        portalstairs_4 = Ground(1000, height // 4 * 3, 200, [all_sprites, ground_layer])
-
-
-
                         # movement triggers
                         right_trigger = False
                         left_trigger = False
@@ -350,8 +345,18 @@ if __name__ == '__main__':
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
-
-                    if event.type == pygame.KEYDOWN:
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        if event.pos[0] >= portal.rect.x and event.pos[0] <= portal.rect.x + portal.rect.width and \
+                                event.pos[1] >= portal.rect.y and event.pos[1] <= portal.rect.y + portal.rect.height:
+                            name = 'FireBoss'
+                            player.rect.x = 50
+                            boss = FireBoss(width - 200, height // 8 * 4, 100, 100, player,
+                                            [all_boss_sprites, boss_group], all_boss_sprites, tools, name, 300)
+                            boss_ground = Ground(0, height // 4 * 3, width, [all_boss_sprites, ground_layer])
+                            condition_trigger = 4
+                        else:
+                            player.hit()
+                    elif event.type == pygame.KEYDOWN:
                         # horizontal move begin
                         if event.key == pygame.K_RIGHT:
                             last_move = 'right'
@@ -376,15 +381,6 @@ if __name__ == '__main__':
                             Bullet(player.rect.x + player.width // 2,
                                    player.rect.y + player.height // 2, 10, 'red',
                                    d, 200, 5, 'enemy', [all_sprites, bullets, all_boss_sprites])
-
-                        elif event.key == pygame.K_z and pygame.sprite.spritecollideany(player, portal_group):
-                            name = 'FireBoss'
-                            player.rect.x = 50
-                            boss = FireBoss(width - 200, height // 8 * 4, 100, 100, player,
-                                 [all_boss_sprites, boss_group], all_boss_sprites, tools, name, 300)
-                            boss_ground = Ground(0, height//4*3, width, [all_boss_sprites, ground_layer])
-                            condition_trigger = 4
-
                         elif event.key == pygame.K_q:
                             shop_trigger = True
                     elif event.type == pygame.KEYUP:
@@ -394,9 +390,6 @@ if __name__ == '__main__':
                         elif event.key == pygame.K_LEFT:
                             left_trigger = False
                         # horizontal move end
-
-                    elif event.type == pygame.MOUSEBUTTONDOWN:
-                        player.hit()
 
                 if player.hp <= 0 or mainTower.hp <= 0:
                     condition_trigger = 3
@@ -449,7 +442,7 @@ if __name__ == '__main__':
                         xr, yr, xl, yl = shop.update()
                         print(x, y)
                         print(xr, yr, xl, yl)
-                        if xr <= x-width // 8 <= xl and yr <= y - height // 8 <= yl:
+                        if xr <= x - width // 8 <= xl and yr <= y - height // 8 <= yl:
                             if shop.money.amount >= shop.price:
                                 shop.buy(mainTower)
                                 print('buy')
@@ -470,67 +463,68 @@ if __name__ == '__main__':
                     # restart checking
                     if rx <= pos[0] <= rx + rw and ry <= pos[1] <= ry + rh:
                         condition_trigger = 0
-                    
+
                     # quit
                     if qx <= pos[0] <= qx + qw and qy <= pos[1] <= qy + qh:
                         running = False
             deadScreen(screen, width, height)
 
         elif condition_trigger == 4:
-            if not shop_trigger:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                    elif event.type == pygame.KEYDOWN:
-                        # horizontal move begin
-                        if event.key == pygame.K_RIGHT:
-                            last_move = 'right'
-                            right_trigger = True
-                            left_trigger = False
-                        elif event.key == pygame.K_LEFT:
-                            last_move = 'left'
-                            right_trigger = False
-                            left_trigger = True
-                        # horizontal move end
-                        # vertical move
-                        elif event.key == pygame.K_UP:
-                            jump_trigger = True
-                        # vertical move end
-                        elif event.key == pygame.K_y:
-                            if last_move == 'right':
-                                d = 1
-                            else:
-                                d = -1
-                            Bullet(player.rect.x + player.width // 2,
-                                   player.rect.y + player.height // 2, 10, 'red',
-                                   d, 200, 5, 'boss', [all_sprites, bullets, all_boss_sprites])
-                        elif event.key == pygame.K_z:
-                            for elem in boss_group:
-                                elem.hpBar.kill()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    # horizontal move begin
+                    if event.key == pygame.K_RIGHT:
+                        last_move = 'right'
+                        right_trigger = True
+                        left_trigger = False
+                    elif event.key == pygame.K_LEFT:
+                        last_move = 'left'
+                        right_trigger = False
+                        left_trigger = True
+                    # horizontal move end
+                    # vertical move
+                    elif event.key == pygame.K_UP:
+                        jump_trigger = True
+                    # vertical move end
+                    elif event.key == pygame.K_y:
+                        if last_move == 'right':
+                            d = 1
+                        else:
+                            d = -1
+                        Bullet(player.rect.x + player.width // 2,
+                                player.rect.y + player.height // 2, 10, 'red',
+                                d, 200, 5, 'boss', [all_sprites, bullets, all_boss_sprites])
+                    elif event.key == pygame.K_z:
+                        for elem in boss_group:
+                            elem.hpBar.kill()
+                            elem.kill()
+                        for elem in bullets:
+                            elem.kill()
+                        for elem in all_boss_sprites:
+                            if elem != player and elem != player.PlayerHPbar:
                                 elem.kill()
-                            for elem in bullets:
-                                elem.kill()
-                            for elem in all_boss_sprites:
-                                if elem != player and elem != player.PlayerHPbar:
-                                    elem.kill()
-                            condition_trigger = 2
-                        elif event.key == pygame.K_q:
-                            shop_trigger = True
-
+                        condition_trigger = 2
+                    elif event.key == pygame.K_q:
+                        shop_trigger = True
                     elif event.type == pygame.KEYUP:
                         if event.key == pygame.K_RIGHT:
                             right_trigger = False
                         elif event.key == pygame.K_LEFT:
                             left_trigger = False
-
                     elif event.type == pygame.MOUSEBUTTONDOWN:
                         player.hit()
-
                 if boss.hp <= 0:
+                    for elem in boss_group:
+                        elem.hpBar.kill()
+                        elem.kill()
+                    for elem in bullets:
+                        elem.kill()
                     for elem in all_boss_sprites:
                         if elem != player and elem != player.PlayerHPbar:
                             elem.kill()
-                    # condition_trigger = 2
+                    condition_trigger = 2
 
                 # horizontal move begin
                 if left_trigger:
@@ -559,31 +553,8 @@ if __name__ == '__main__':
                 all_boss_sprites.draw(screen)
                 all_boss_sprites.update()
 
-            else:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_q:
-                            shop_trigger = False
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        x, y = event.pos
-                        xr, yr, xl, yl = shop.update()
-                        print(x, y)
-                        print(xr, yr, xl, yl)
-                        if xr <= x-width // 8 <= xl and yr <= y - height // 8 <= yl:
-                            if shop.money.amount >= shop.price:
-                                shop.buy(mainTower)
-                                print('buy')
-                            else:
-                                pass
-                shop_group.draw(screen)
-                shop_group.update()
-
-
         collisionClock += 1
         time += speedPerFrame
-
         print("\rFPS:", clock.get_fps(), end='')
         pygame.display.flip()
     pygame.quit()
