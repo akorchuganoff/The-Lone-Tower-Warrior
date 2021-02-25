@@ -511,7 +511,7 @@ if __name__ == '__main__':
                             for elem in bullets:
                                 elem.kill()
                             for elem in all_boss_sprites:
-                                if elem != player:
+                                if elem != player and elem != player.PlayerHPbar:
                                     elem.kill()
                             condition_trigger = 2
                         elif event.key == pygame.K_q:
@@ -528,7 +528,8 @@ if __name__ == '__main__':
 
                 if boss.hp <= 0:
                     for elem in all_boss_sprites:
-                        elem.kill()
+                        if elem != player and elem != player.PlayerHPbar:
+                            elem.kill()
                     # condition_trigger = 2
 
                 # horizontal move begin
