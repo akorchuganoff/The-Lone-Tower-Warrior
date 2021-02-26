@@ -8,8 +8,23 @@ from menu_screen import menuScreen
 from shop_screen import shopScreen
 from PortalClass import Portal
 
-
 # TODO:
+
+easy_enemy_walk = [pygame.image.load('Data/easy enemy/walk/1.png'), pygame.image.load('Data/easy enemy/walk/2.png'),
+                   pygame.image.load('Data/easy enemy/walk/3.png'), pygame.image.load('Data/easy enemy/walk/4.png'),
+                   pygame.image.load('Data/easy enemy/walk/5.png'), pygame.image.load('Data/easy enemy/walk/6.png'),
+                   pygame.image.load('Data/easy enemy/walk/7.png')]
+
+easy_enemy_idle = [pygame.image.load('Data/easy enemy/ide.png')]
+
+easy_enemy_attack = [pygame.image.load('Data/easy enemy/attack/1.png'),
+                     pygame.image.load('Data/easy enemy/attack/2.png'),
+                     pygame.image.load('Data/easy enemy/attack/3.png'),
+                     pygame.image.load('Data/easy enemy/attack/4.png'),
+                     pygame.image.load('Data/easy enemy/attack/5.png'),
+                     pygame.image.load('Data/easy enemy/attack/6.png'),
+                     pygame.image.load('Data/easy enemy/attack/7.png')]
+
 
 class MainTower(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, hp, group, all_sprites, tools):
@@ -112,6 +127,70 @@ class Enemy(pygame.sprite.Sprite):
                 mainTower.hp -= 1
 
 
+class Easy_enemy(Enemy):
+    def __init__(self, x, y, width, height, player, group, all_sprites, tools, hp=10):
+        super().__init__(x, y, width, height, player, group, all_sprites, tools, hp=10)
+        self.frames_walk = easy_enemy_walk
+        self.frames_idle = easy_enemy_idle
+        self.frames_attack = easy_enemy_attack
+        self.frames = self.frames_idle
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = pygame.Rect(0, 0, self.frames_idle[0].get_width(),
+                                self.frames_idle[0].get_height())
+        self.rect = self.rect.move(x, y)
+
+        self.width = self.frames_idle[0].get_width()
+        self.hpBar.kill()
+        self.hpBar = HPbar(self, self.frames_walk[0].get_width(), hp, [all_sprites, tools])
+        print(self.rect, self.frames[0].get_width())
+
+        self.count = 0
+        self.attackTrigger = False
+
+    def EnemyAI(self):
+        super().EnemyAI()
+
+        if 0 <= self.rect.x - self.player.rect.x+self.rect.w <= 10 or 0 <= self.rect.x - self.player.rect.x + self.player.rect.w <= 10:
+            self.attackTrigger = True
+        else:
+            self.attackTrigger = False
+
+    def update(self):
+        super().update()
+
+        self.count += 1
+        if self.count % 4 == 0:
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+        if not self.attackTrigger:
+            if self.cur_frame == 0:
+                if -1 <= self.vx <= 1:
+                    self.frames = self.frames_idle
+                else:
+                    self.frames = self.frames_walk
+        else:
+            self.frames = self.frames_attack
+
+
+class AnimatedSprite(pygame.sprite.Sprite):
+    def __init__(self, sheet, x, y):
+        super().__init__(all_sprites)
+        self.frames = sheet
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = pygame.Rect(0, 0, sheet[0].get_width(),
+                                sheet[0].get_height())
+        self.rect = self.rect.move(x, y)
+        self.count = 0
+
+    def update(self):
+        self.count += 1
+        if self.count % 3 == 0:
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+
+
 class Boss(Enemy):
     def __init__(self, x, y, width, height, player, group, all_boss_sprites, tools, name, hp):
         super().__init__(x, y, width, height, player, group, all_boss_sprites, tools, hp)
@@ -159,6 +238,7 @@ class FireBoss(Boss):
         if collisionClock % 5 == 0:
             if pygame.sprite.spritecollideany(self, player_group):
                 player.hp -= 1
+
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, radius, color, direction, speed, damage, player, group):
@@ -242,7 +322,7 @@ def newWave(typesOfEnemies):
         enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
         x = random.randrange(ground.rect.x, ground.rect.x + ground.rect.width - 50, 1)
         if enemy == 'goblin':
-            enemy = Enemy(x, ground.rect.y - 100, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
+            enemy = Easy_enemy(x, ground.rect.y - 100, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
         elif enemy == 'giant':
             enemy = Enemy(x, ground.rect.y - 100, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
 
