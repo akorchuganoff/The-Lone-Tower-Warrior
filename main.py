@@ -25,6 +25,21 @@ easy_enemy_attack = [pygame.image.load('Data/easy enemy/attack/1.png'),
                      pygame.image.load('Data/easy enemy/attack/6.png'),
                      pygame.image.load('Data/easy enemy/attack/7.png')]
 
+giant_enemy_walk = [pygame.image.load('Data/giant enemy/walk/1.png'), pygame.image.load('Data/giant enemy/walk/2.png'),
+                   pygame.image.load('Data/giant enemy/walk/3.png'), pygame.image.load('Data/giant enemy/walk/4.png'),
+                   pygame.image.load('Data/giant enemy/walk/5.png'), pygame.image.load('Data/giant enemy/walk/6.png'),
+                   pygame.image.load('Data/giant enemy/walk/7.png')]
+
+giant_enemy_idle = [pygame.image.load('Data/giant enemy/idle.png')]
+
+giant_enemy_attack = [pygame.image.load('Data/giant enemy/attack/1.png'),
+                     pygame.image.load('Data/giant enemy/attack/2.png'),
+                     pygame.image.load('Data/giant enemy/attack/3.png'),
+                     pygame.image.load('Data/giant enemy/attack/4.png'),
+                     pygame.image.load('Data/giant enemy/attack/5.png'),
+                     pygame.image.load('Data/giant enemy/attack/6.png'),
+                     pygame.image.load('Data/giant enemy/attack/7.png')]
+
 
 class MainTower(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, hp, group, all_sprites, tools):
@@ -142,7 +157,7 @@ class Easy_enemy(Enemy):
 
         self.width = self.frames_idle[0].get_width()
         self.hpBar.kill()
-        self.hpBar = HPbar(self, self.frames_walk[0].get_width(), hp, [all_sprites, tools])
+        self.hpBar = HPbar(self, self.frames_walk[0].get_width(), 10, [all_sprites, tools])
         print(self.rect, self.frames[0].get_width())
 
         self.count = 0
@@ -150,7 +165,6 @@ class Easy_enemy(Enemy):
 
     def EnemyAI(self):
         super().EnemyAI()
-
         if 0 <= self.rect.x - self.player.rect.x+self.rect.w <= 10 or 0 <= self.rect.x - self.player.rect.x + self.player.rect.w <= 10:
             self.attackTrigger = True
         else:
@@ -158,7 +172,50 @@ class Easy_enemy(Enemy):
 
     def update(self):
         super().update()
+        self.count += 1
+        if self.count % 4 == 0:
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+        if not self.attackTrigger:
+            if self.cur_frame == 0:
+                if -1 <= self.vx <= 1:
+                    self.frames = self.frames_idle
+                else:
+                    self.frames = self.frames_walk
+        else:
+            self.frames = self.frames_attack
 
+
+class Giant_enemy(Enemy):
+    def __init__(self, x, y, width, height, player, group, all_sprites, tools, hp=50):
+        super().__init__(x, y, width, height, player, group, all_sprites, tools, hp=50)
+        self.frames_walk = giant_enemy_walk
+        self.frames_idle = giant_enemy_idle
+        self.frames_attack = giant_enemy_attack
+        self.frames = self.frames_idle
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = pygame.Rect(0, 0, self.frames_idle[0].get_width(),
+                                self.frames_idle[0].get_height())
+        self.rect = self.rect.move(x, y)
+
+        self.width = self.frames_idle[0].get_width()
+        self.hpBar.kill()
+        self.hpBar = HPbar(self, self.frames_walk[0].get_width(), 10, [all_sprites, tools])
+        print(self.rect, self.frames[0].get_width())
+
+        self.count = 0
+        self.attackTrigger = False
+
+    def EnemyAI(self):
+        super().EnemyAI()
+        if 0 <= self.rect.x - self.player.rect.x+self.rect.w <= 10 or 0 <= self.rect.x - self.player.rect.x + self.player.rect.w <= 10:
+            self.attackTrigger = True
+        else:
+            self.attackTrigger = False
+
+    def update(self):
+        super().update()
         self.count += 1
         if self.count % 4 == 0:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
@@ -269,7 +326,7 @@ class HPbar(pygame.sprite.Sprite):
     def __init__(self, player, width, height, groups):
         super().__init__(*groups)
         self.image = pygame.Surface([width, height])
-        self.rect = pygame.Rect(player.rect.x - width // 2, player.rect.y - height, width, height)
+        self.rect = pygame.Rect(player.rect.x - width // 2, player.rect.y - height * 2, width, height)
         self.player = player
         self.hp_beg = player.hp
         self.hp = player.hp
@@ -289,6 +346,7 @@ class Boss_HPbar(HPbar):
     def __init__(self, player, groups):
         super().__init__(player, 1000, 20, groups)
         self.rect = pygame.Rect(100, 150, 1000, 20)
+        self.height = 20
 
     def update(self):
         self.hp = self.player.hp
@@ -324,7 +382,7 @@ def newWave(typesOfEnemies):
         if enemy == 'goblin':
             enemy = Easy_enemy(x, ground.rect.y - 100, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
         elif enemy == 'giant':
-            enemy = Enemy(x, ground.rect.y - 100, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
+            enemy = Giant_enemy(x, ground.rect.y - 100, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
 
         print(x, ground.rect.x, )
 
