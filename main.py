@@ -612,6 +612,7 @@ if __name__ == '__main__':
                 for elem in all_boss_sprites:
                     if elem != player and elem != player.PlayerHPbar:
                         elem.kill()
+                    condition_trigger = 2
             if player.hp <= 0 or mainTower.hp <= 0:
                 condition_trigger = 3
                 # condition_trigger = 2
