@@ -151,6 +151,8 @@ class Easy_enemy(Enemy):
         self.frames = self.frames_idle
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
+        if self.player.rect.x + self.player.width // 2 < self.rect.x:
+            self.image = pygame.transform.flip(self.image, True, False)
         self.rect = pygame.Rect(0, 0, self.frames_idle[0].get_width(),
                                 self.frames_idle[0].get_height())
         self.rect = self.rect.move(x, y)
@@ -158,7 +160,6 @@ class Easy_enemy(Enemy):
         self.width = self.frames_idle[0].get_width()
         self.hpBar.kill()
         self.hpBar = HPbar(self, self.frames_walk[0].get_width(), 10, [all_sprites, tools])
-        print(self.rect, self.frames[0].get_width())
 
         self.count = 0
         self.attackTrigger = False
@@ -176,6 +177,8 @@ class Easy_enemy(Enemy):
         if self.count % 4 == 0:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
+            if self.player.rect.x + self.player.width // 2 < self.rect.x:
+                self.image = pygame.transform.flip(self.image, True, False)
         if not self.attackTrigger:
             if self.cur_frame == 0:
                 if -1 <= self.vx <= 1:
@@ -195,6 +198,8 @@ class Giant_enemy(Enemy):
         self.frames = self.frames_idle
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
+        if self.player.rect.x + self.player.width // 2 < self.rect.x:
+            self.image = pygame.transform.flip(self.image, True, False)
         self.rect = pygame.Rect(0, 0, self.frames_idle[0].get_width(),
                                 self.frames_idle[0].get_height())
         self.rect = self.rect.move(x, y)
@@ -202,7 +207,6 @@ class Giant_enemy(Enemy):
         self.width = self.frames_idle[0].get_width()
         self.hpBar.kill()
         self.hpBar = HPbar(self, self.frames_walk[0].get_width(), 10, [all_sprites, tools])
-        print(self.rect, self.frames[0].get_width())
 
         self.count = 0
         self.attackTrigger = False
@@ -220,6 +224,8 @@ class Giant_enemy(Enemy):
         if self.count % 4 == 0:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
+            if self.player.rect.x + self.player.width // 2 < self.rect.x:
+                self.image = pygame.transform.flip(self.image, True, False)
         if not self.attackTrigger:
             if self.cur_frame == 0:
                 if -1 <= self.vx <= 1:
@@ -290,7 +296,7 @@ class FireBoss(Boss):
             else:
                 d = 1
             Bullet(self.rect.x + self.width // 2,
-                   self.rect.y + self.height // 2, 20, 'pink',
+                   self.rect.y + self.height // 3, pygame.image.load('Data/fireball/fireball50_35.png'),
                    d, 400, 10, 'player', [bullets, all_boss_sprites])
         if collisionClock % 5 == 0:
             if pygame.sprite.spritecollideany(self, player_group):
@@ -298,13 +304,16 @@ class FireBoss(Boss):
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, radius, color, direction, speed, damage, player, group):
+    def __init__(self, x, y, image, direction, speed, damage, player, group):
         super().__init__(*group)
-        self.image = pygame.Surface([radius * 2, radius * 2])
-        pygame.draw.circle(self.image, pygame.Color(color), (radius, radius), radius)
-        self.rect = pygame.Rect(x, y, radius * 2, radius * 2)
-        # direction = +- 1
+        self.image = image
         self.direct = direction
+        if self.direct == -1:
+            self.image = pygame.transform.flip(self.image, True, False)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        # direction = +- 1
         self.speed = speed
         self.damage = damage
         if player == 'player':
@@ -508,7 +517,8 @@ if __name__ == '__main__':
                             else:
                                 d = -1
                             Bullet(player.rect.x + player.width // 2,
-                                   player.rect.y + player.height // 2, 10, 'red',
+                                   player.rect.y,
+                                   pygame.image.load('Data/fireball/fireball50_35.png'),
                                    d, 200, 5, 'enemy', [all_sprites, bullets, all_boss_sprites])
                         elif event.key == pygame.K_q:
                             shop_trigger = True
@@ -638,8 +648,9 @@ if __name__ == '__main__':
                         else:
                             d = -1
                         Bullet(player.rect.x + player.width // 2,
-                                player.rect.y + player.height // 2, 10, 'red',
-                                d, 200, 5, 'boss', [all_sprites, bullets, all_boss_sprites])
+                               player.rect.y,
+                               pygame.image.load('Data/fireball/fireball50_35.png'),
+                               d, 200, 5, 'boss', [all_sprites, bullets, all_boss_sprites])
                     elif event.key == pygame.K_z:
                         player.rect.x = mainTower.rect.x + mainTower.rect.width // 2
                         for elem in boss_group:
