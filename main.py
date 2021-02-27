@@ -106,6 +106,7 @@ class Ground(pygame.sprite.Sprite):
         super().__init__(*group)
         self.image = pygame.Surface([width, 5])
         self.image.fill((255, 255, 255))
+        self.image.set_alpha(0)
         self.rect = pygame.Rect(x, y, width, 5)
 
     def update(self):
@@ -465,6 +466,7 @@ if __name__ == '__main__':
     size = width, height = 1200, 800
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
+    image = pygame.image.load('Data/fon4.png')
 
     running = True
     player_position = [width // 2, height // 2]
@@ -584,7 +586,7 @@ if __name__ == '__main__':
                             boss = FireBoss(width - 200, height // 8 * 4, 100, 100, player,
                                             [all_boss_sprites, boss_group], all_boss_sprites,
                                             tools, name, 300, attack=fire_boss_attack, idle=fire_boss_idle)
-                            boss_ground = Ground(0, height // 4 * 3, width, [all_boss_sprites, ground_layer])
+                            boss_ground = Ground(0, height // 4 * 3 - 100, width, [all_boss_sprites, ground_layer])
                             condition_trigger = 4
                             f1 = False
                             collisionClock = 0
@@ -758,6 +760,7 @@ if __name__ == '__main__':
             # vertical move end
             # Main act
             screen.fill((0, 0, 0))
+            screen.blit(image, (-100, 0))
             boss.draw_boss_name()
             all_boss_sprites.draw(screen)
             all_boss_sprites.update()
