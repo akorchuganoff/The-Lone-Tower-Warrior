@@ -3,9 +3,8 @@ import pygame
 class Portal(pygame.sprite.Sprite):
     def __init__(self, groups):
         super().__init__(*groups)
-        self.image = pygame.Surface([200, 200])
-        self.rect = pygame.Rect(1000, 0, 200, 200)
-        self.image.fill((255, 255, 255))
+        self.image = pygame.image.load('Data/portal1.png')
+        self.rect = pygame.Rect(1000, 0, self.image.get_width(), self.image.get_height())
 
     def update(self):
         pass
