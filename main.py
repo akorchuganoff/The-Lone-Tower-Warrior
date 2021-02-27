@@ -298,13 +298,38 @@ class FireBoss(Boss):
             Bullet(self.rect.x + self.width // 2,
                    self.rect.y + self.height // 3, pygame.image.load('Data/fireball/fireball50_35.png'),
                    d, 400, 10, 'player', [bullets, all_boss_sprites])
+            for i in range(5):
+                n = self.rect.x + self.width // 2
+                x = random.randint(n - 50, n + 50)
+                n = n - self.player.rect.x - self.player.rect.width // 2
+                y = random.randint(self.rect.y + self.rect.height // 2 - n - 75, self.rect.y + self.rect.height // 2 - n + 75)
+                Bullet(x, y,
+                       pygame.image.load('Data/fireball/fireball50_35.png'),
+                       d, 400, 10, 'player', [bullets, all_boss_sprites], 400)
+        if collisionClock % 5 == 0:
+            if pygame.sprite.spritecollideany(self, player_group):
+                player.hp -= 1
+
+
+
+class Summoner(Boss):
+    def update(self):
+        if self.hp <= 0:
+            money.amount += 100
+            self.hpBar.kill()
+            self.kill()
+            return
+        if not pygame.sprite.spritecollideany(self, ground_layer):
+            self.rect.y += 300 * speedPerFrame
+        if collisionClock % 75 == 59:
+            Easy_enemy(self.rect.x, self.rect.y, 30, 30, player, [all_boss_sprites, enemies], all_boss_sprites, tools)
         if collisionClock % 5 == 0:
             if pygame.sprite.spritecollideany(self, player_group):
                 player.hp -= 1
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, image, direction, speed, damage, player, group):
+    def __init__(self, x, y, image, direction, xspeed, damage, player, group, yspeed=0):
         super().__init__(*group)
         self.image = image
         self.direct = direction
@@ -314,7 +339,8 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         # direction = +- 1
-        self.speed = speed
+        self.xspeed = xspeed
+        self.yspeed = yspeed
         self.damage = damage
         if player == 'player':
             self.target = player_group
@@ -324,10 +350,13 @@ class Bullet(pygame.sprite.Sprite):
             self.target = boss_group
 
     def update(self):
-        self.rect.x += self.direct * self.speed * speedPerFrame
+        self.rect.x += self.direct * self.xspeed * speedPerFrame
+        self.rect.y += self.yspeed * speedPerFrame
         target = pygame.sprite.spritecollideany(self, self.target)
         if pygame.sprite.spritecollideany(self, self.target):
             target.hp -= self.damage
+            self.kill()
+        elif pygame.sprite.spritecollideany(self, ground_layer):
             self.kill()
 
 
