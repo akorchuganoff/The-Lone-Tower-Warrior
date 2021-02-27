@@ -413,19 +413,18 @@ class Boss_HPbar(HPbar):
 class Money(pygame.sprite.Sprite):
     def __init__(self, groups):
         super().__init__(*groups)
-        self.image = pygame.Surface([500, 35])
-        self.rect = pygame.Rect(50, 50, 100, 15)
-        self.font = pygame.font.Font(None, 30)
+        self.image = pygame.Surface([0, 0])
+        self.rect = pygame.Rect(50, 50, 0, 0)
         self.amount = 0
 
     def update(self):
-        text = self.font.render(f"Your balance: {self.amount}", True, (200, 200, 200))
-        text_x = 0
-        text_y = 0
+        font = pygame.font.Font(None, 30)
+        text = font.render(f"Your balance: {self.amount}", True, (200, 200, 200))
+        text_x = 50
+        text_y = 50
         text_w = text.get_width()
         text_h = text.get_height()
-        self.image.fill((0, 0, 0))
-        self.image.blit(text, (text_x, text_y))
+        screen.blit(text, (text_x, text_y))
 
 
 def newWave(typesOfEnemies):
@@ -465,6 +464,7 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
     image = pygame.image.load('Data/fon4.png')
+    image2 = pygame.image.load('Data/fon.png')
 
     running = True
     player_position = [width // 2, height // 2]
@@ -518,7 +518,6 @@ if __name__ == '__main__':
                         player = Player(player_position[0], player_position[1], 20, 50, 200,
                                         [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
                         ground = Ground(0, height // 4 * 3, width, [all_sprites, ground_layer])
-                        ground.image.set_alpha(100)
                         shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
                         # portal way
@@ -623,6 +622,7 @@ if __name__ == '__main__':
                     newWave(typesOfEnemies)
                 # Main act
                 screen.fill((0, 0, 0))
+                screen.blit(image2, (-350, -125))
                 all_sprites.draw(screen)
                 all_sprites.update()
 
