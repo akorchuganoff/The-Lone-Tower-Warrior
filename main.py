@@ -52,14 +52,13 @@ fire_boss_attack = [pygame.image.load('Data/fire boss/idle.png'),
 
 
 class MainTower(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, hp, group, all_sprites, tools):
+    def __init__(self, x, y, hp, group, all_sprites, tools):
         super().__init__(*group)
-        self.image = pygame.Surface([width, height])
-        self.image.fill((0, 0, 255))
-        self.rect = pygame.Rect(x, y, width, height)
+        self.image = pygame.image.load('Data/tower2.png')
+        self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
+        self.width = self.rect.width
+        self.height = self.rect.height
         self.hp = hp
-        self.width = width
-        self.height = height
         self.MainTowerHPbar = HPbar(self, 500, 20, [all_sprites, tools])
         self.damage = 0
 
@@ -318,9 +317,9 @@ class FireBoss(Boss):
             else:
                 d = 1
             for i in range(5):
-                n = self.rect.x + self.width // 2
+                n = abs(self.rect.x + self.width // 2)
                 x = random.randint(n - 50, n + 50)
-                n = n - self.player.rect.x - self.player.rect.width // 2
+                n = abs(n - self.player.rect.x - self.player.rect.width // 2)
                 y = random.randint(self.rect.y + self.rect.height // 2 - n - 75, self.rect.y + self.rect.height // 2 - n + 75)
                 Bullet(x, y,
                        pygame.image.load('Data/fireball/fireball50_35.png'),
@@ -515,11 +514,12 @@ if __name__ == '__main__':
                         portal_group = pygame.sprite.Group()
 
                         money = Money([all_sprites, tools])
-                        mainTower = MainTower(width // 8 * 3, height // 4, width // 4, height // 2, 1000,
+                        mainTower = MainTower(width // 8 * 2.5, height // 10, 1000,
                                               [all_sprites, maintowergroup], all_sprites, tools)
                         player = Player(player_position[0], player_position[1], 20, 50, 200,
                                         [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
                         ground = Ground(0, height // 4 * 3, width, [all_sprites, ground_layer])
+                        ground.image.set_alpha(100)
                         shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
                         # portal way
@@ -568,7 +568,7 @@ if __name__ == '__main__':
                             Bullet(player.rect.x + player.width // 2,
                                    player.rect.y,
                                    pygame.image.load('Data/fireball/fireball50_35.png'),
-                                   d, 200, 5, 'enemies', [all_sprites, bullets])
+                                   d, 500, 5, 'enemies', [all_sprites, bullets])
                         elif event.key == pygame.K_q:
                             shop_trigger = True
                     elif event.type == pygame.KEYUP:
@@ -701,7 +701,7 @@ if __name__ == '__main__':
                         Bullet(player.rect.x + player.width // 2,
                                player.rect.y,
                                pygame.image.load('Data/fireball/fireball50_35.png'),
-                               d, 200, 5, 'enemies', [bullets, all_boss_sprites])
+                               d, 500, 5, 'enemies', [bullets, all_boss_sprites])
                     elif event.key == pygame.K_z:
                         player.rect.x = mainTower.rect.x + mainTower.rect.width // 2
                         for elem in boss_group:
