@@ -190,8 +190,8 @@ class Easy_enemy(Enemy):
 
 
 class Giant_enemy(Enemy):
-    def __init__(self, x, y, width, height, player, group, all_sprites, tools, hp=50):
-        super().__init__(x, y, width, height, player, group, all_sprites, tools, hp=50)
+    def __init__(self, x, y, width, height, player, group, all_sprites, tools, hp=25):
+        super().__init__(x, y, width, height, player, group, all_sprites, tools, hp=hp)
         self.frames_walk = giant_enemy_walk
         self.frames_idle = giant_enemy_idle
         self.frames_attack = giant_enemy_attack
@@ -326,6 +326,10 @@ class Summoner(Boss):
         if collisionClock % 5 == 0:
             if pygame.sprite.spritecollideany(self, player_group):
                 player.hp -= 1
+        if self.player.rect.x + self.player.width // 2 > self.rect.x + self.rect.width // 2:
+            self.rect.x += 40 * speedPerFrame
+        elif self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+            self.rect.x -= 10 * speedPerFrame
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -343,20 +347,22 @@ class Bullet(pygame.sprite.Sprite):
         self.yspeed = yspeed
         self.damage = damage
         if player == 'player':
-            self.target = player_group
-        elif player == 'enemy':
-            self.target = enemies
-        elif player == 'boss':
-            self.target = boss_group
+            self.target = [player_group]
+        elif player == 'enemies':
+            self.target = [boss_group, enemies]
 
     def update(self):
         self.rect.x += self.direct * self.xspeed * speedPerFrame
         self.rect.y += self.yspeed * speedPerFrame
-        target = pygame.sprite.spritecollideany(self, self.target)
-        if pygame.sprite.spritecollideany(self, self.target):
-            target.hp -= self.damage
-            self.kill()
-        elif pygame.sprite.spritecollideany(self, ground_layer):
+        for i in self.target:
+            if i not in all_boss_sprites and condition_trigger == 4 or\
+                    i not in all_sprites and condition_trigger == 2:
+                continue
+            target = pygame.sprite.spritecollideany(self, i)
+            if pygame.sprite.spritecollideany(self, i):
+                target.hp -= self.damage
+                self.kill()
+        if pygame.sprite.spritecollideany(self, ground_layer):
             self.kill()
 
 
@@ -497,7 +503,7 @@ if __name__ == '__main__':
                         money = Money([all_sprites, tools])
                         mainTower = MainTower(width // 8 * 3, height // 4, width // 4, height // 2, 1000,
                                               [all_sprites, maintowergroup], all_sprites, tools)
-                        player = Player(player_position[0], player_position[1], 20, 50, 100,
+                        player = Player(player_position[0], player_position[1], 20, 50, 200,
                                         [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
                         ground = Ground(0, height // 4 * 3, width, [all_sprites, ground_layer])
                         shop = shopScreen(width, height, [shop_group], money)
@@ -548,7 +554,7 @@ if __name__ == '__main__':
                             Bullet(player.rect.x + player.width // 2,
                                    player.rect.y,
                                    pygame.image.load('Data/fireball/fireball50_35.png'),
-                                   d, 200, 5, 'enemy', [all_sprites, bullets, all_boss_sprites])
+                                   d, 200, 5, 'enemies', [all_sprites, bullets])
                         elif event.key == pygame.K_q:
                             shop_trigger = True
                     elif event.type == pygame.KEYUP:
@@ -562,8 +568,8 @@ if __name__ == '__main__':
                     elif event.type == pygame.MOUSEBUTTONDOWN:
                         if event.pos[0] > portal.rect.x and event.pos[0] < portal.rect.x + portal.rect.width and\
                             event.pos[1] > portal.rect.y and event.pos[1] < portal.rect.y + portal.rect.height:
-                            name = 'FireBoss'
-                            boss = FireBoss(width - 200, height // 8 * 4, 100, 100, player,
+                            name = 'Summoner'
+                            boss = Summoner(width - 200, height // 8 * 4, 100, 100, player,
                                             [all_boss_sprites, boss_group], all_boss_sprites, tools, name, 300)
                             boss_ground = Ground(0, height // 4 * 3, width, [all_boss_sprites, ground_layer])
                             condition_trigger = 4
@@ -679,7 +685,7 @@ if __name__ == '__main__':
                         Bullet(player.rect.x + player.width // 2,
                                player.rect.y,
                                pygame.image.load('Data/fireball/fireball50_35.png'),
-                               d, 200, 5, 'boss', [all_sprites, bullets, all_boss_sprites])
+                               d, 200, 5, 'enemies', [bullets, all_boss_sprites])
                     elif event.key == pygame.K_z:
                         player.rect.x = mainTower.rect.x + mainTower.rect.width // 2
                         for elem in boss_group:
