@@ -228,8 +228,7 @@ class Giant_enemy(Enemy):
         if not self.attackTrigger:
             super().EnemyAI()
         if self.rect.x + self.rect.width // 2 in \
-                range(self.player.rect.x + self.player.rect.width // 2 - 10,
-                      self.player.rect.x + self.player.rect.width // 2 + 10):
+                range(self.player.rect.x + 30, self.player.rect.x + self.player.rect.width - 30):
             self.attackTrigger = True
         else:
             self.attackTrigger = False
