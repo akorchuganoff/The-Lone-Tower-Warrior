@@ -40,6 +40,16 @@ giant_enemy_attack = [pygame.image.load('Data/giant enemy/attack/1.png'),
                      pygame.image.load('Data/giant enemy/attack/6.png'),
                      pygame.image.load('Data/giant enemy/attack/7.png')]
 
+fire_boss_idle = [pygame.image.load('Data/fire boss/idle.png')]
+fire_boss_attack = [pygame.image.load('Data/fire boss/idle.png'),
+                    pygame.image.load('Data/fire boss/idle.png'),
+                    pygame.image.load('Data/fire boss/idle.png'),
+                    pygame.image.load('Data/fire boss/attack/1.png'),
+                    pygame.image.load('Data/fire boss/attack/2.png'),
+                    pygame.image.load('Data/fire boss/attack/3.png'),
+                    pygame.image.load('Data/fire boss/attack/4.png'),
+                    pygame.image.load('Data/fire boss/attack/5.png')]
+
 
 class MainTower(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, hp, group, all_sprites, tools):
@@ -242,31 +252,28 @@ class Giant_enemy(Enemy):
             self.frames = self.frames_attack
 
 
-class AnimatedSprite(pygame.sprite.Sprite):
-    def __init__(self, sheet, x, y):
-        super().__init__(all_sprites)
-        self.frames = sheet
-        self.cur_frame = 0
-        self.image = self.frames[self.cur_frame]
-        self.rect = pygame.Rect(0, 0, sheet[0].get_width(),
-                                sheet[0].get_height())
-        self.rect = self.rect.move(x, y)
-        self.count = 0
-
-    def update(self):
-        self.count += 1
-        if self.count % 3 == 0:
-            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-            self.image = self.frames[self.cur_frame]
-
 
 class Boss(Enemy):
-    def __init__(self, x, y, width, height, player, group, all_boss_sprites, tools, name, hp):
+    def __init__(self, x, y, width, height, player, group, all_boss_sprites, tools, name, hp,
+                 attack=None, idle=None, walk=None, death=None):
         super().__init__(x, y, width, height, player, group, all_boss_sprites, tools, hp)
-        self.rect = pygame.Rect(x, y, width, height)
+        self.frames_walk = walk
+        self.frames_attack = attack
+        self.frames_idle = idle
+        self.frames = self.frames_idle
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+            self.image = pygame.transform.flip(self.image, True, False)
+        self.rect = pygame.Rect(0, 0, self.frames_idle[0].get_width(),
+                                self.frames_idle[0].get_height())
+        self.rect = self.rect.move(x, y)
+
         self.name = name
         self.hpBar.kill()
         self.hpBar = Boss_HPbar(self, [all_boss_sprites, tools])
+        self.attackTrigger = False
+
 
     def draw_boss_name(self):
         font = pygame.font.Font(None, 50)
@@ -285,25 +292,30 @@ class Boss(Enemy):
             return
         if not pygame.sprite.spritecollideany(self, ground_layer):
             self.rect.y += 300 * speedPerFrame
+        if self.rect.x + self.rect.width // 2 in \
+                range(self.player.rect.x + self.player.rect.width // 2 - 10,
+                      self.player.rect.x + self.player.rect.width // 2 + 10):
+            self.attackTrigger = True
+        else:
+            self.attackTrigger = False
+
 
 
 class FireBoss(Boss):
     def update(self):
-        if self.hp <= 0:
-            money.amount += 100
-            self.hpBar.kill()
-            self.kill()
-            return
-        if not pygame.sprite.spritecollideany(self, ground_layer):
-            self.rect.y += 300 * speedPerFrame
-        if collisionClock % 75 == 59:
+        super().update()
+        self.attackTrigger = True
+        self.frames = self.frames_attack
+        if collisionClock % 4 == 3:
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+            if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                self.image = pygame.transform.flip(self.image, True, False)
+        if collisionClock % 32 == 31:
             if player.rect.x < self.rect.x + self.rect.width // 2:
                 d = - 1
             else:
                 d = 1
-            Bullet(self.rect.x + self.width // 2,
-                   self.rect.y + self.height // 3, pygame.image.load('Data/fireball/fireball50_35.png'),
-                   d, 400, 10, 'player', [bullets, all_boss_sprites])
             for i in range(5):
                 n = self.rect.x + self.width // 2
                 x = random.randint(n - 50, n + 50)
@@ -320,13 +332,7 @@ class FireBoss(Boss):
 
 class Summoner(Boss):
     def update(self):
-        if self.hp <= 0:
-            money.amount += 100
-            self.hpBar.kill()
-            self.kill()
-            return
-        if not pygame.sprite.spritecollideany(self, ground_layer):
-            self.rect.y += 300 * speedPerFrame
+        super().update()
         if collisionClock % 75 == 59:
             Easy_enemy(self.rect.x, self.rect.y, 30, 30, player, [all_boss_sprites, enemies], all_boss_sprites, tools)
         if collisionClock % 5 == 0:
@@ -574,12 +580,14 @@ if __name__ == '__main__':
                     elif event.type == pygame.MOUSEBUTTONDOWN:
                         if event.pos[0] > portal.rect.x and event.pos[0] < portal.rect.x + portal.rect.width and\
                             event.pos[1] > portal.rect.y and event.pos[1] < portal.rect.y + portal.rect.height:
-                            name = 'Summoner'
-                            boss = Summoner(width - 200, height // 8 * 4, 100, 100, player,
-                                            [all_boss_sprites, boss_group], all_boss_sprites, tools, name, 300)
+                            name = 'Fireboss'
+                            boss = FireBoss(width - 200, height // 8 * 4, 100, 100, player,
+                                            [all_boss_sprites, boss_group], all_boss_sprites,
+                                            tools, name, 300, attack=fire_boss_attack, idle=fire_boss_idle)
                             boss_ground = Ground(0, height // 4 * 3, width, [all_boss_sprites, ground_layer])
                             condition_trigger = 4
                             f1 = False
+                            collisionClock = 0
                             continue
                         else:
                             player.hit()
