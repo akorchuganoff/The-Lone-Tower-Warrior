@@ -117,9 +117,9 @@ class Enemy(pygame.sprite.Sprite):
         self.height = height
 
     def EnemyAI(self):
-        if self.player.rect.x + self.player.width // 2 > self.rect.x:
+        if self.player.rect.x + self.player.width // 2 > self.rect.x + self.rect.width // 2:
             self.vx = 100 * speedPerFrame
-        elif self.player.rect.x + self.player.width // 2 < self.rect.x:
+        elif self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
             self.vx = -100 * speedPerFrame
         else:
             self.vx = 0
@@ -151,7 +151,7 @@ class Easy_enemy(Enemy):
         self.frames = self.frames_idle
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
-        if self.player.rect.x + self.player.width // 2 < self.rect.x:
+        if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
             self.image = pygame.transform.flip(self.image, True, False)
         self.rect = pygame.Rect(0, 0, self.frames_idle[0].get_width(),
                                 self.frames_idle[0].get_height())
@@ -165,8 +165,11 @@ class Easy_enemy(Enemy):
         self.attackTrigger = False
 
     def EnemyAI(self):
-        super().EnemyAI()
-        if 0 <= self.rect.x - self.player.rect.x+self.rect.w <= 10 or 0 <= self.rect.x - self.player.rect.x + self.player.rect.w <= 10:
+        if not self.attackTrigger:
+            super().EnemyAI()
+        if self.rect.x + self.rect.width // 2 in \
+                range(self.player.rect.x + self.player.rect.width // 2 - 10,
+                      self.player.rect.x + self.player.rect.width // 2 + 10):
             self.attackTrigger = True
         else:
             self.attackTrigger = False
@@ -177,7 +180,7 @@ class Easy_enemy(Enemy):
         if self.count % 4 == 0:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
-            if self.player.rect.x + self.player.width // 2 < self.rect.x:
+            if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                 self.image = pygame.transform.flip(self.image, True, False)
         if not self.attackTrigger:
             if self.cur_frame == 0:
@@ -198,7 +201,7 @@ class Giant_enemy(Enemy):
         self.frames = self.frames_idle
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
-        if self.player.rect.x + self.player.width // 2 < self.rect.x:
+        if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
             self.image = pygame.transform.flip(self.image, True, False)
         self.rect = pygame.Rect(0, 0, self.frames_idle[0].get_width(),
                                 self.frames_idle[0].get_height())
@@ -212,8 +215,11 @@ class Giant_enemy(Enemy):
         self.attackTrigger = False
 
     def EnemyAI(self):
-        super().EnemyAI()
-        if 0 <= self.rect.x - self.player.rect.x+self.rect.w <= 10 or 0 <= self.rect.x - self.player.rect.x + self.player.rect.w <= 10:
+        if not self.attackTrigger:
+            super().EnemyAI()
+        if self.rect.x + self.rect.width // 2 in \
+                range(self.player.rect.x + self.player.rect.width // 2 - 10,
+                      self.player.rect.x + self.player.rect.width // 2 + 10):
             self.attackTrigger = True
         else:
             self.attackTrigger = False
@@ -224,7 +230,7 @@ class Giant_enemy(Enemy):
         if self.count % 4 == 0:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
-            if self.player.rect.x + self.player.width // 2 < self.rect.x:
+            if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                 self.image = pygame.transform.flip(self.image, True, False)
         if not self.attackTrigger:
             if self.cur_frame == 0:
