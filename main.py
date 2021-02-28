@@ -1,6 +1,7 @@
 # mainloop
 import pygame
 import random
+import math
 
 from dead_screen import deadScreen
 from logo_screen import logo
@@ -311,6 +312,7 @@ class FireBoss(Boss):
             if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                 self.image = pygame.transform.flip(self.image, True, False)
         if collisionClock % 32 == 31:
+            print('dsojdsojf')
             if player.rect.x < self.rect.x + self.rect.width // 2:
                 d = - 1
             else:
@@ -373,7 +375,8 @@ class Bullet(pygame.sprite.Sprite):
             if pygame.sprite.spritecollideany(self, i):
                 target.hp -= self.damage
                 self.kill()
-        if pygame.sprite.spritecollideany(self, ground_layer):
+        if pygame.sprite.spritecollideany(self, ground_layer) or self.rect.y + self.rect.width < -1000 or\
+                self.rect.y > 800:
             self.kill()
 
 
@@ -557,16 +560,6 @@ if __name__ == '__main__':
                         elif event.key == pygame.K_UP:
                             jump_trigger = True
                         # vertical move end
-
-                        elif event.key == pygame.K_y:
-                            if last_move == 'right':
-                                d = 1
-                            else:
-                                d = -1
-                            Bullet(player.rect.x + player.width // 2,
-                                   player.rect.y,
-                                   pygame.image.load('Data/fireball/fireball50_35.png'),
-                                   d, 500, 5, 'enemies', [all_sprites, bullets])
                         elif event.key == pygame.K_q:
                             shop_trigger = True
                     elif event.type == pygame.KEYUP:
@@ -578,8 +571,11 @@ if __name__ == '__main__':
                         # horizontal move end
 
                     elif event.type == pygame.MOUSEBUTTONDOWN:
-                        if event.pos[0] > portal.rect.x and event.pos[0] < portal.rect.x + portal.rect.width and\
-                            event.pos[1] > portal.rect.y and event.pos[1] < portal.rect.y + portal.rect.height:
+                        if event.button == 1 and\
+                                event.pos[0] > portal.rect.x and\
+                                event.pos[0] < portal.rect.x + portal.rect.width and\
+                                event.pos[1] > portal.rect.y and\
+                                event.pos[1] < portal.rect.y + portal.rect.height:
                             name = 'Fireboss'
                             boss = FireBoss(width - 200, height // 8 * 4, 100, 100, player,
                                             [all_boss_sprites, boss_group], all_boss_sprites,
@@ -589,8 +585,36 @@ if __name__ == '__main__':
                             f1 = False
                             collisionClock = 0
                             continue
-                        else:
+                        elif event.button == 1:
                             player.hit()
+                        elif event.button == 3:
+                            x1, y1 = event.pos
+                            x2, y2 = player.rect.x + player.width // 2, player.rect.y + player.height // 2
+                            print((x1, y1), (x2, y2))
+                            if x1 >= x2:
+                                dx = 1
+                            else:
+                                dx = -1
+                            if y1 >= y2:
+                                dy = 1
+                            else:
+                                dy = -1
+                            if y1 - y2 != 0:
+                                vy2 = int(500 ** 2 / (((x1 - x2) / (y1 - y2)) ** 2 + 1))
+                            else:
+                                vy2 = 0
+                            vx2 = 500 ** 2 - vy2
+                            vy = vy2 ** 0.5 * dy
+                            vx = vx2 ** 0.5
+                            if vx != 0:
+                                angle = math.degrees(math.atan(-vy / vx))
+                            else:
+                                angle = 90
+                            print(angle)
+                            arrow = pygame.transform.rotate(pygame.image.load('Data/arrow2.png'), angle)
+                            Bullet(player.rect.x + player.width // 2,
+                                   player.rect.y - player.rect.height // 2, arrow,
+                                   dx, vx, 5, 'enemies', [all_sprites, bullets], vy)
                 if player.hp <= 0 or mainTower.hp <= 0:
                     condition_trigger = 3
 
@@ -617,7 +641,7 @@ if __name__ == '__main__':
                 # vertical move end
 
                 # enemies spawn
-                if int(time) % 5 == 0:
+                if int(time) % 10 == 0:
                     time += 1
                     newWave(typesOfEnemies)
                 # Main act
@@ -692,15 +716,6 @@ if __name__ == '__main__':
                     elif event.key == pygame.K_UP:
                         jump_trigger = True
                     # vertical move end
-                    elif event.key == pygame.K_y:
-                        if last_move == 'right':
-                            d = 1
-                        else:
-                            d = -1
-                        Bullet(player.rect.x + player.width // 2,
-                               player.rect.y,
-                               pygame.image.load('Data/fireball/fireball50_35.png'),
-                               d, 500, 5, 'enemies', [bullets, all_boss_sprites])
                     elif event.key == pygame.K_z:
                         player.rect.x = mainTower.rect.x + mainTower.rect.width // 2
                         for elem in boss_group:
@@ -719,8 +734,34 @@ if __name__ == '__main__':
                         left_trigger = False
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    player.hit()
-
+                    if event.button == 1:
+                        player.hit()
+                    elif event.button == 3:
+                        x1, y1 = event.pos
+                        x2, y2 = player.rect.x + player.width // 2, player.rect.y + player.height // 2
+                        if x1 >= x2:
+                            dx = 1
+                        else:
+                            dx = -1
+                        if y1 >= y2:
+                            dy = 1
+                        else:
+                            dy = -1
+                        if y1 - y2 != 0:
+                            vy2 = int(500 ** 2 / (((x1 - x2) / (y1 - y2)) ** 2 + 1))
+                        else:
+                            vy2 = 0
+                        vx2 = 500 ** 2 - vy2
+                        vy = vy2 ** 0.5 * dy
+                        vx = vx2 ** 0.5
+                        if vx != 0:
+                            angle = math.degrees(math.atan(-vy / vx))
+                        else:
+                            angle = 90
+                        arrow = pygame.transform.rotate(pygame.image.load('Data/arrow2.png'), angle)
+                        Bullet(player.rect.x + player.width // 2,
+                               player.rect.y - player.rect.height // 2, arrow, dx, vx, 5,
+                               'enemies', [all_boss_sprites, bullets], vy)
             if boss.hp <= 0:
                 player.rect.x = mainTower.rect.x + mainTower.rect.width // 2
                 for elem in boss_group:
@@ -767,6 +808,5 @@ if __name__ == '__main__':
         collisionClock += 1
         time += speedPerFrame
 
-        print("\rFPS:", clock.get_fps(), end='')
         pygame.display.flip()
     pygame.quit()
