@@ -1,7 +1,7 @@
 import pygame
 
-def menuScreen(screen, width, height):
-    screen.fill((0, 0, 0))
+def menuScreen(screen, width, height, colorkey):
+    screen.fill(colorkey)
     font = pygame.font.Font(None, 50)
 
     start_text = font.render("Start", True, (200, 200, 200))

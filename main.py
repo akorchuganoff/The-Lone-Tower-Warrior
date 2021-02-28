@@ -4,7 +4,6 @@ import random
 import math
 
 from dead_screen import deadScreen
-from menu_screen import menuScreen
 from shop_screen import shopScreen
 from PortalClass import Portal
 
@@ -93,6 +92,15 @@ def logo(screen, width, height):
                     (300, 200))
     pygame.draw.rect(screen, pygame.Color('#ffd700'),
                      ((201, 601), ((800 * i / (303 + 222 + 1) - 2), 30 - 2)), width=0)
+
+
+def menuScreen(screen, width, height, colorkey):
+    screen.fill(colorkey)
+    screen.blit(pygame.image.load('Data/menu/no continue2.gif'), (300, 100))
+    screen.blit(pygame.image.load('Data/menu/new game.gif'), (300, 250))
+    screen.blit(pygame.image.load('Data/menu/exit.gif'), (300, 400))
+    start_pos, continue_pos, exit_pos = (500, 300, 700, 380), (500, 160, 700, 240), (500, 700, 470, 540)
+    return start_pos, continue_pos, exit_pos
 
 
 class MainTower(pygame.sprite.Sprite):
@@ -648,7 +656,7 @@ if __name__ == '__main__':
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = event.pos
-                    start_pos, continue_pos, stats_pos = menuScreen(screen, width, height)
+                    start_pos, continue_pos, exit_pos = menuScreen(screen, width, height, colorkey)
                     if start_pos[0] <= x <= start_pos[2] and start_pos[1] <= y <= start_pos[3]:
                         print('start')
                         collisionClock = 0
@@ -687,9 +695,9 @@ if __name__ == '__main__':
                         last_move = 'right'
                     elif continue_pos[0] <= x <= continue_pos[2] and continue_pos[1] <= y <= continue_pos[3]:
                         print('continue')
-                    elif stats_pos[0] <= x <= stats_pos[2] and stats_pos[1] <= y <= stats_pos[3]:
+                    elif exit_pos[0] <= x <= exit_pos[2] and exit_pos[1] <= y <= exit_pos[3]:
                         print('stats')
-            menuScreen(screen, width, height)
+            menuScreen(screen, width, height, colorkey)
 
         elif condition_trigger == 2:
             if not shop_trigger:
