@@ -66,6 +66,7 @@ giant_enemy_attack = [pygame.image.load('Data/giant enemy/attack/1.png'),
                      pygame.image.load('Data/giant enemy/attack/7.png')]
 
 fire_boss_idle = [pygame.image.load('Data/fire boss/idle.png')]
+
 fire_boss_attack = [pygame.image.load('Data/fire boss/idle.png'),
                     pygame.image.load('Data/fire boss/idle.png'),
                     pygame.image.load('Data/fire boss/idle.png'),
@@ -76,6 +77,22 @@ fire_boss_attack = [pygame.image.load('Data/fire boss/idle.png'),
                     pygame.image.load('Data/fire boss/attack/5.png')]
 
 fire_boss_death = [pygame.image.load('Data/fire boss/death/1.png'),
+                    pygame.image.load('Data/fire boss/death/2.png'),
+                    pygame.image.load('Data/fire boss/death/3.png'),
+                    pygame.image.load('Data/fire boss/death/4.png'),
+                    pygame.image.load('Data/fire boss/death/5.png')]
+
+ogre_boss_idle = [pygame.image.load('Data/ogr boss/idle.png')]
+
+ogre_boss_attack = [pygame.image.load('Data/ogr boss/attack/1.png'),
+                    pygame.image.load('Data/ogr boss/attack/2.png'),
+                    pygame.image.load('Data/ogr boss/attack/3.png'),
+                    pygame.image.load('Data/ogr boss/attack/4.png'),
+                    pygame.image.load('Data/ogr boss/attack/5.png'),
+                    pygame.image.load('Data/ogr boss/attack/6.png'),
+                    pygame.image.load('Data/ogr boss/attack/7.png')]
+
+ogre_boss_death = [pygame.image.load('Data/fire boss/death/1.png'),
                     pygame.image.load('Data/fire boss/death/2.png'),
                     pygame.image.load('Data/fire boss/death/3.png'),
                     pygame.image.load('Data/fire boss/death/4.png'),
@@ -502,6 +519,10 @@ class Summoner(Boss):
             self.rect.x += 40 * speedPerFrame
         elif self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
             self.rect.x -= 10 * speedPerFrame
+
+
+class Ogre(Boss):
+    pass
 
 
 class Bullet(pygame.sprite.Sprite):
