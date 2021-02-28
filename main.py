@@ -464,7 +464,7 @@ class FireBoss(Boss):
             self.image = self.frames[self.cur_frame]
             if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                 self.image = pygame.transform.flip(self.image, True, False)
-        if collisionClock % 32 == 31:
+        if collisionClock % 64 == 31:
             if player.rect.x < self.rect.x + self.rect.width // 2:
                 d = - 1
             else:
@@ -477,6 +477,14 @@ class FireBoss(Boss):
                 Bullet(x, y,
                        pygame.image.load('Data/fireball/fireball50_35.png'),
                        d, 400, 10, 'player', [bullets, all_boss_sprites], 400)
+        if collisionClock % 64 == 63:
+            if player.rect.x < self.rect.x + self.rect.width // 2:
+                d = - 1
+            else:
+                d = 1
+            Bullet(self.rect.x + self.rect.width // 2, self.rect.y + self.rect.height // 2,
+                   pygame.image.load('Data/fireball/fireball50_35.png'),
+                   d, 400, 10, 'player', [bullets, all_boss_sprites])
         if collisionClock % 5 == 0:
             if pygame.sprite.spritecollideany(self, player_group):
                 player.hp -= 1
