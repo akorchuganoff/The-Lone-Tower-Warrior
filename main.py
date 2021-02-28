@@ -291,7 +291,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.y = ground.rect.y - self.frames[self.cur_frame].get_height()
         if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
             self.image = pygame.transform.flip(self.image, True, False)
-        self.hpBar = HPbar(self, self.frames_walk[0].get_width(), 10, [all_sprites, tools])
+        self.hpBar = HPbar(self, self.frames_idle[0].get_width(), 10, [all_sprites, tools])
 
     def update(self):
         if self.hp <= 0:
@@ -416,7 +416,7 @@ class FireBoss(Boss):
             else:
                 d = 1
             for i in range(5):
-                n = abs(self.rect.x + self.width // 2)
+                n = abs(self.rect.x + self.rect.width // 2)
                 x = random.randint(n - 50, n + 50)
                 n = abs(n - self.player.rect.x - self.player.rect.width // 2)
                 y = random.randint(self.rect.y + self.rect.height // 2 - n - 75, self.rect.y + self.rect.height // 2 - n + 75)
@@ -755,6 +755,7 @@ if __name__ == '__main__':
                                 event.pos[0] < portal.rect.x + portal.rect.width and\
                                 event.pos[1] > portal.rect.y and\
                                 event.pos[1] < portal.rect.y + portal.rect.height:
+                            # Я знаю что это отвратительно и бессовестно, но что поделать
                             if False:
                                 name = 'Wizard'
                                 boss = FireBoss(width - 200, height // 8 * 4, player,
@@ -765,18 +766,21 @@ if __name__ == '__main__':
                                 condition_trigger = 4
                                 f1 = False
                                 collisionClock = 0
+                                ground.kill()
                                 continue
                             name = 'Ogre'
                             boss = Ogre(width - 200, height // 8 * 4, player,
                                             [all_boss_sprites, boss_group], all_boss_sprites,
-                                            tools, name, 300, pygame.image.load('Data/fon4.png'),
+                                            tools, name, 300, pygame.image.load('Data/fon3.png'),
                                             attack=ogre_boss_attack, walk=ogre_boss_walk,
                                             idle=ogre_boss_idle, death=ogre_boss_death)
-                            boss_ground = Ground(0, height // 4 * 3 - 50, width, [all_boss_sprites, ground_layer])
+                            boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
                             condition_trigger = 4
                             f1 = False
                             collisionClock = 0
+                            ground.kill()
                             continue
+                            # Конец этого ужаса
                         elif event.button == 1 and not player.attackTrigger:
                             player.hit(event.pos)
                         elif event.button == 3 and not player.attackTrigger:
@@ -893,6 +897,7 @@ if __name__ == '__main__':
                         for elem in all_boss_sprites:
                             if elem != player and elem != player.PlayerHPbar:
                                 elem.kill()
+                            ground = Ground(0, height // 4 * 3, width, [all_sprites, ground_layer])
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_RIGHT:
                         right_trigger = False
