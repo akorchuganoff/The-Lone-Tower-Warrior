@@ -346,6 +346,7 @@ class Boss(Enemy):
         self.hpBar.kill()
         self.hpBar = Boss_HPbar(self, [all_boss_sprites, tools])
 
+        self.vy = 0
         self.attackClock = 0
         self.abilityClock = 0
         self.abilityTrigger = False
@@ -383,9 +384,7 @@ class Boss(Enemy):
             money.amount += 100
             self.death()
             return
-        if self.rect.x + self.rect.width // 2 in \
-                range(self.player.rect.x + self.player.rect.width // 2 - 10,
-                      self.player.rect.x + self.player.rect.width // 2 + 10):
+        if pygame.sprite.spritecollideany(self, player_group):
             if not self.attackTrigger:
                 self.cur_frame = -1
                 self.frames = self.frames_attack
@@ -441,7 +440,9 @@ class Summoner(Boss):
     def update(self):
         super().update()
         if collisionClock % 75 == 59:
-            Easy_enemy(self.rect.x, self.rect.y, 30, 30, player, [all_boss_sprites, enemies], all_boss_sprites, tools)
+            enemy = Enemy(self.rect.x, self.rect.y, boss_ground.rect.y - 100, player, [all_sprites, enemies],
+                          all_sprites, tools, hp=10, attack=easy_enemy_attack,
+                          walk=easy_enemy_walk, idle=easy_enemy_idle)
         if collisionClock % 5 == 0:
             if pygame.sprite.spritecollideany(self, player_group):
                 player.hp -= 1
@@ -457,21 +458,28 @@ class Ogre(Boss):
         if self.deathTrigger:
             return
         self.abilityClock += 1
-        if self.abilityClock % 270 == 0:
+        if self.abilityClock == 270:
             self.abilityClock = 0
             self.cur_frame = -1
             self.abilityTrigger = True
-        if self.abilityTrigger and not self.attackTrigger:
-            self.frames = self.frames_attack
+        if self.abilityTrigger:
+            self.frames = [*self.frames_attack, self.frames_attack[-1]]
+            if self.abilityClock <= 20:
+                self.vy -= 250 * speedPerFrame
+            elif self.abilityClock > 20:
+                self.vy += 250 * 20 / 15 * speedPerFrame
             if self.abilityClock % 4 == 3:
                 self.cur_frame = (self.cur_frame + 1) % len(self.frames)
                 self.image = self.frames[self.cur_frame]
-                self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height()
+                self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height() + self.vy
                 if width // 2 < self.rect.x + self.rect.width // 2:
                     self.image = pygame.transform.flip(self.image, True, False)
-            if self.abilityClock % 270 == 90:
+            if self.abilityClock == 35:
+                self.vy = 0
                 self.abilityTrigger = False
                 self.cur_frame = -1
+                if player.isGrounded:
+                    player.hp -= min(175, int(300 / abs(player.rect.x - self.rect.x) ** 0.2))
             return
         if self.attackTrigger:
             self.attackClock += 1
