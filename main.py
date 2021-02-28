@@ -4,7 +4,6 @@ import random
 import math
 
 from dead_screen import deadScreen
-from logo_screen import logo
 from menu_screen import menuScreen
 from shop_screen import shopScreen
 from PortalClass import Portal
@@ -82,6 +81,18 @@ fire_boss_death = [pygame.image.load('Data/fire boss/death/1.png'),
                     pygame.image.load('Data/fire boss/death/3.png'),
                     pygame.image.load('Data/fire boss/death/4.png'),
                     pygame.image.load('Data/fire boss/death/5.png')]
+
+
+def logo(screen, width, height):
+    if i > 222:
+        k = i - 222
+        screen.blit(pygame.image.load('Data/the_best_logo_you_ever_seen/authors/' + str(k) + '.gif'),
+                    (300, 400))
+    else:
+        screen.blit(pygame.image.load('Data/the_best_logo_you_ever_seen/name/' + str(i) + '.gif'),
+                    (300, 200))
+    pygame.draw.rect(screen, pygame.Color('#ffd700'),
+                     ((201, 601), ((800 * i / (303 + 222 + 1) - 2), 30 - 2)), width=0)
 
 
 class MainTower(pygame.sprite.Sprite):
@@ -433,7 +444,6 @@ class Boss(Enemy):
             self.attackTrigger = False
 
 
-
 class FireBoss(Boss):
     def update(self):
         super().update()
@@ -598,24 +608,37 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
     image2 = pygame.image.load('Data/fon.png')
-
+    # const
     running = True
     player_position = [width // 2, height // 2]
     horizontall_speed = 200
     vertical_speed = 500
-
     typesOfEnemies = ['goblin', 'giant']
     condition_trigger = -1
     collisionClock = 0
     time = 0
     camera = Camera()
+    # New logo
+    i = 0
+    image = pygame.image.load('Data/the_best_logo_you_ever_seen/name/0.gif')
+    colorkey = image.get_at((0, 0))
+    screen.fill(colorkey)
+    screen.blit(pygame.image.load('Data/the_best_logo_you_ever_seen/authors/0.gif'), (300, 400))
+    screen.blit(pygame.image.load('Data/the_best_logo_you_ever_seen/name/0.gif'), (300, 200))
+    pygame.draw.rect(screen, (0, 0, 0), ((200, 600), (800, 30)), 1)
+    fps = 60
 
     while running:
-        speedPerFrame = clock.tick(30) / 1000
+        speedPerFrame = clock.tick(fps) / 1000
         if condition_trigger == -1:
-            if time >= 1:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            i += 1
+            if i == 600:
+                fps = 30
                 condition_trigger = 0
-            else:
+            elif i < 303 + 222 + 1:
                 logo(screen, width, height)
 
         if condition_trigger == 0:
