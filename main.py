@@ -11,6 +11,32 @@ from PortalClass import Portal
 
 # TODO:
 
+player_walk = [pygame.image.load('Data/main hero/run/1.png'),
+               pygame.image.load('Data/main hero/run/2.png'),
+               pygame.image.load('Data/main hero/run/3.png'),
+               pygame.image.load('Data/main hero/run/4.png'),
+               pygame.image.load('Data/main hero/run/5.png')]
+
+player_idle = [pygame.image.load('Data/main hero/idle.png')]
+
+player_attack = [pygame.image.load('Data/main hero/attack/1.png'),
+                pygame.image.load('Data/main hero/attack/2.png'),
+                pygame.image.load('Data/main hero/attack/3.png'),
+                pygame.image.load('Data/main hero/attack/4.png'),
+                pygame.image.load('Data/main hero/attack/5.png')]
+
+player_jump = [pygame.image.load('Data/main hero/jump/1.png'),
+                pygame.image.load('Data/main hero/jump/2.png'),
+                pygame.image.load('Data/main hero/jump/3.png'),
+                pygame.image.load('Data/main hero/jump/4.png'),
+                pygame.image.load('Data/main hero/jump/5.png')]
+
+player_death = [pygame.image.load('Data/main hero/death/1.png'),
+                pygame.image.load('Data/main hero/death/2.png'),
+                pygame.image.load('Data/main hero/death/3.png'),
+                pygame.image.load('Data/main hero/death/4.png'),
+                pygame.image.load('Data/main hero/death/5.png')]
+
 easy_enemy_walk = [pygame.image.load('Data/easy enemy/walk/1.png'), pygame.image.load('Data/easy enemy/walk/2.png'),
                    pygame.image.load('Data/easy enemy/walk/3.png'), pygame.image.load('Data/easy enemy/walk/4.png'),
                    pygame.image.load('Data/easy enemy/walk/5.png'), pygame.image.load('Data/easy enemy/walk/6.png'),
@@ -76,34 +102,83 @@ class MainTower(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, hp, group, all_sprites, tools):
+    def __init__(self, x, y, hp, group, all_sprites, tools):
         super().__init__(*group)
-        self.image = pygame.Surface([width, height])
-        self.image.fill((255, 0, 0))
-        self.rect = pygame.Rect(x, y, width, height)
+        self.frames_walk = player_walk
+        self.frames_attack = player_attack
+        self.frames_idle = player_idle
+        self.frames_death = player_death
+        self.frames_jump = player_jump
+        self.frames = self.frames_idle
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = pygame.Rect(x, y, self.frames_idle[0].get_width(),
+                                self.frames_idle[0].get_height())
+
         self.vx = 0
         self.vy = 0
         self.isGrounded = False
+        self.attackTrigger = False
         self.hp = hp
-        self.PlayerHPbar = HPbar(self, 100, 10, [all_sprites, tools, all_boss_sprites])
-        self.width = width
-        self.height = height
+        self.PlayerHPbar = HPbar(self, self.frames_idle[0].get_width(), 10, [all_sprites, tools, all_boss_sprites])
+        self.width = self.frames_idle[0].get_width()
+        self.height = self.frames_idle[0].get_height()
 
-    def hit(self):
-        for enemy in pygame.sprite.spritecollide(self, enemies, False):
-            enemy.hp -= 1
-        for enemy in pygame.sprite.spritecollide(self, boss_group, False):
-            enemy.hp -= 1
+    def hit(self, pos):
+        global last_move
+        if not self.isGrounded:
+            return
+        self.attackTrigger = True
+        self.attackClock = 0
+        if self.rect.x + self.rect.width // 2 <= pos[0]:
+            last_move = 'right'
+        else:
+            last_move = 'left'
+        self.cur_frame = -1
+        self.frames = self.frames_attack
 
     def update(self):
+        if self.attackTrigger:
+            self.attackClock += 1
+            if self.attackClock % 3 == 0:
+                self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+                self.image = self.frames[self.cur_frame]
+                if last_move == 'left':
+                    self.image = pygame.transform.flip(self.image, True, False)
+            if self.attackClock == len(self.frames) * 3:
+                self.attackTrigger = False
+                for enemy in pygame.sprite.spritecollide(self, enemies, False):
+                    enemy.hp -= 10
+                for enemy in pygame.sprite.spritecollide(self, boss_group, False):
+                    enemy.hp -= 10
+            return
         if pygame.sprite.spritecollideany(self, ground_layer):
             self.isGrounded = True
+            # animation
+            if self.vx == 0 and collisionClock % 5 == 0:
+                self.image = self.frames_idle[0]
+                if last_move == 'left':
+                    self.image = pygame.transform.flip(self.image, True, False)
+
+            elif collisionClock % 5 == 0:
+                self.frames = self.frames_walk
+                self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+                self.image = self.frames[self.cur_frame]
+                if last_move == 'left':
+                    self.image = pygame.transform.flip(self.image, True, False)
+            # end animation
             if self.vy <= 0:
                 self.rect = self.rect.move(self.vx, self.vy)
             else:
                 self.rect = self.rect.move(self.vx, 0)
         else:
             self.isGrounded = False
+            self.frames = self.frames_jump
+            if collisionClock % 3 == 0:
+                self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+                self.image = self.frames[self.cur_frame]
+                if last_move == 'left':
+                    self.image = pygame.transform.flip(self.image, True, False)
             self.rect = self.rect.move(self.vx, self.vy)
 
 
@@ -260,12 +335,13 @@ class Giant_enemy(Enemy):
 
 
 class Boss(Enemy):
-    def __init__(self, x, y, width, height, player, group, all_boss_sprites, tools, name, hp, fon,
+    def __init__(self, x, y, player, group, all_boss_sprites, tools, name, hp, fon,
                  attack=None, idle=None, walk=None, death=None):
-        super().__init__(x, y, width, height, player, group, all_boss_sprites, tools, hp)
+        self.frames_idle = idle
+        super().__init__(x, y, self.frames_idle[0].get_width(),
+                         self.frames_idle[0].get_height(), player, group, all_boss_sprites, tools, hp)
         self.frames_walk = walk
         self.frames_attack = attack
-        self.frames_idle = idle
         self.frames_death = death
         self.frames = self.frames_idle
         self.cur_frame = 0
@@ -504,7 +580,7 @@ def archery(x1, y1, x2, y2, group):
         angle = 90
     arrow = pygame.transform.rotate(pygame.image.load('Data/arrow2.png'), angle)
     return Bullet(player.rect.x + player.width // 2,
-           player.rect.y - player.rect.height // 2, arrow, dx, vx, 5,
+           player.rect.y + 30, arrow, dx, vx, 5,
            'enemies', [group, bullets], vy)
 
 
@@ -564,7 +640,7 @@ if __name__ == '__main__':
                         money = Money([all_sprites, tools])
                         mainTower = MainTower(width // 8 * 2.5, height // 10, 1000,
                                               [all_sprites, maintowergroup], all_sprites, tools)
-                        player = Player(player_position[0], player_position[1], 20, 50, 200,
+                        player = Player(player_position[0], player_position[1], 200,
                                         [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
                         ground = Ground(0, height // 4 * 3, width, [all_sprites, ground_layer])
                         shop = shopScreen(width, height, [shop_group], money)
@@ -589,7 +665,6 @@ if __name__ == '__main__':
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
-
                     if event.type == pygame.KEYDOWN:
                         # horizontal move begin
                         if event.key == pygame.K_RIGHT:
@@ -616,24 +691,24 @@ if __name__ == '__main__':
                             left_trigger = False
                         # horizontal move end
 
-                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1 and\
                                 event.pos[0] > portal.rect.x and\
                                 event.pos[0] < portal.rect.x + portal.rect.width and\
                                 event.pos[1] > portal.rect.y and\
                                 event.pos[1] < portal.rect.y + portal.rect.height:
                             name = 'Wizard'
-                            boss = FireBoss(width - 200, height // 8 * 4, 100, 100, player,
+                            boss = FireBoss(width - 200, height // 8 * 4, player,
                                             [all_boss_sprites, boss_group], all_boss_sprites,
                                             tools, name, 100, pygame.image.load('Data/fon4.png'),
                                             attack=fire_boss_attack, idle=fire_boss_idle, death=fire_boss_death)
-                            boss_ground = Ground(0, height // 4 * 3 - 100, width, [all_boss_sprites, ground_layer])
+                            boss_ground = Ground(0, height // 4 * 3 - 50, width, [all_boss_sprites, ground_layer])
                             condition_trigger = 4
                             f1 = False
                             collisionClock = 0
                             continue
-                        elif event.button == 1:
-                            player.hit()
+                        elif event.button == 1 and not player.attackTrigger:
+                            player.hit(event.pos)
                         elif event.button == 3:
                             x1, y1 = event.pos
                             x2, y2 = player.rect.x + player.width // 2, player.rect.y + player.height // 2
@@ -711,7 +786,6 @@ if __name__ == '__main__':
                     # restart checking
                     if rx <= pos[0] <= rx + rw and ry <= pos[1] <= ry + rh:
                         condition_trigger = 0
-
                     # quit
                     if qx <= pos[0] <= qx + qw and qy <= pos[1] <= qy + qh:
                         running = False
@@ -756,8 +830,8 @@ if __name__ == '__main__':
                         left_trigger = False
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        player.hit()
+                    if event.button == 1 and not player.attackTrigger:
+                        player.hit(event.pos)
                     elif event.button == 3:
                         x1, y1 = event.pos
                         x2, y2 = player.rect.x + player.width // 2, player.rect.y + player.height // 2
