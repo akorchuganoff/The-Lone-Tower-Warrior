@@ -114,28 +114,32 @@ class Player(pygame.sprite.Sprite):
         self.image = self.frames[self.cur_frame]
         self.rect = pygame.Rect(x, y, self.frames_idle[0].get_width(),
                                 self.frames_idle[0].get_height())
-
         self.vx = 0
         self.vy = 0
         self.isGrounded = False
         self.attackTrigger = False
+        self.archeryTrigger = False
         self.hp = hp
         self.PlayerHPbar = HPbar(self, self.frames_idle[0].get_width(), 10, [all_sprites, tools, all_boss_sprites])
         self.width = self.frames_idle[0].get_width()
         self.height = self.frames_idle[0].get_height()
 
-    def hit(self, pos):
+    def hit(self, pos, coords=(), group=False):
         global last_move
         if not self.isGrounded:
             return
         self.attackTrigger = True
+        self.cur_frame = -1
+        self.frames = self.frames_attack
         self.attackClock = 0
         if self.rect.x + self.rect.width // 2 <= pos[0]:
             last_move = 'right'
         else:
             last_move = 'left'
-        self.cur_frame = -1
-        self.frames = self.frames_attack
+        if len(coords) > 0:
+            self.archeryTrigger = True
+            self.archery_coords = coords
+            self.archery_group = group
 
     def update(self):
         if self.attackTrigger:
@@ -147,6 +151,11 @@ class Player(pygame.sprite.Sprite):
                     self.image = pygame.transform.flip(self.image, True, False)
             if self.attackClock == len(self.frames) * 3:
                 self.attackTrigger = False
+                if self.archeryTrigger:
+                    print(self.archery_coords, self.archery_group)
+                    self.archery(*self.archery_coords, self.archery_group)
+                    self.archeryTrigger = False
+                    return
                 for enemy in pygame.sprite.spritecollide(self, enemies, False):
                     enemy.hp -= 10
                 for enemy in pygame.sprite.spritecollide(self, boss_group, False):
@@ -180,6 +189,31 @@ class Player(pygame.sprite.Sprite):
                 if last_move == 'left':
                     self.image = pygame.transform.flip(self.image, True, False)
             self.rect = self.rect.move(self.vx, self.vy)
+
+    def archery(self, x1, y1, x2, y2, group):
+        if x1 >= x2:
+            dx = 1
+        else:
+            dx = -1
+        if y1 >= y2:
+            dy = 1
+        else:
+            dy = -1
+        if y1 - y2 != 0:
+            vy2 = int(500 ** 2 / (((x1 - x2) / (y1 - y2)) ** 2 + 1))
+        else:
+            vy2 = 0
+        vx2 = 500 ** 2 - vy2
+        vy = vy2 ** 0.5 * dy
+        vx = vx2 ** 0.5
+        if vx != 0:
+            angle = math.degrees(math.atan(-vy / vx))
+        else:
+            angle = 90
+        arrow = pygame.transform.rotate(pygame.image.load('Data/arrow2.png'), angle)
+        return Bullet(player.rect.x + player.width // 2,
+                      player.rect.y + 30, arrow, dx, vx, 5,
+                      'enemies', [group, bullets], vy)
 
 
 class Ground(pygame.sprite.Sprite):
@@ -558,32 +592,6 @@ def newWave(typesOfEnemies):
             enemy = Giant_enemy(x, ground.rect.y - 100, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
 
 
-def archery(x1, y1, x2, y2, group):
-    if x1 >= x2:
-        dx = 1
-    else:
-        dx = -1
-    if y1 >= y2:
-        dy = 1
-    else:
-        dy = -1
-    if y1 - y2 != 0:
-        vy2 = int(500 ** 2 / (((x1 - x2) / (y1 - y2)) ** 2 + 1))
-    else:
-        vy2 = 0
-    vx2 = 500 ** 2 - vy2
-    vy = vy2 ** 0.5 * dy
-    vx = vx2 ** 0.5
-    if vx != 0:
-        angle = math.degrees(math.atan(-vy / vx))
-    else:
-        angle = 90
-    arrow = pygame.transform.rotate(pygame.image.load('Data/arrow2.png'), angle)
-    return Bullet(player.rect.x + player.width // 2,
-           player.rect.y + 30, arrow, dx, vx, 5,
-           'enemies', [group, bullets], vy)
-
-
 if __name__ == '__main__':
     pygame.init()
     size = width, height = 1200, 800
@@ -640,7 +648,7 @@ if __name__ == '__main__':
                         money = Money([all_sprites, tools])
                         mainTower = MainTower(width // 8 * 2.5, height // 10, 1000,
                                               [all_sprites, maintowergroup], all_sprites, tools)
-                        player = Player(player_position[0], player_position[1], 200,
+                        player = Player(player_position[0], player_position[1], 500,
                                         [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
                         ground = Ground(0, height // 4 * 3, width, [all_sprites, ground_layer])
                         shop = shopScreen(width, height, [shop_group], money)
@@ -709,10 +717,10 @@ if __name__ == '__main__':
                             continue
                         elif event.button == 1 and not player.attackTrigger:
                             player.hit(event.pos)
-                        elif event.button == 3:
+                        elif event.button == 3 and not player.attackTrigger:
                             x1, y1 = event.pos
                             x2, y2 = player.rect.x + player.width // 2, player.rect.y + player.height // 2
-                            archery(x1, y1, x2, y2, all_sprites)
+                            player.hit(event.pos, coords=(x1, y1, x2, y2), group=all_sprites)
                 if player.hp <= 0 or mainTower.hp <= 0:
                     condition_trigger = 3
 
@@ -832,10 +840,10 @@ if __name__ == '__main__':
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1 and not player.attackTrigger:
                         player.hit(event.pos)
-                    elif event.button == 3:
+                    elif event.button == 3 and not player.attackTrigger:
                         x1, y1 = event.pos
                         x2, y2 = player.rect.x + player.width // 2, player.rect.y + player.height // 2
-                        archery(x1, y1, x2, y2, all_boss_sprites)
+                        player.hit(event.pos, coords=(x1, y1, x2, y2), group=all_boss_sprites)
             if player.hp <= 0 or mainTower.hp <= 0:
                 condition_trigger = 3
 
