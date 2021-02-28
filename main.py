@@ -92,11 +92,18 @@ ogre_boss_attack = [pygame.image.load('Data/ogr boss/attack/1.png'),
                     pygame.image.load('Data/ogr boss/attack/6.png'),
                     pygame.image.load('Data/ogr boss/attack/7.png')]
 
-ogre_boss_death = [pygame.image.load('Data/fire boss/death/1.png'),
-                    pygame.image.load('Data/fire boss/death/2.png'),
-                    pygame.image.load('Data/fire boss/death/3.png'),
-                    pygame.image.load('Data/fire boss/death/4.png'),
-                    pygame.image.load('Data/fire boss/death/5.png')]
+ogre_boss_death = [pygame.image.load('Data/ogr boss/death/1.png'),
+                    pygame.image.load('Data/ogr boss/death/2.png'),
+                    pygame.image.load('Data/ogr boss/death/3.png'),
+                    pygame.image.load('Data/ogr boss/death/4.png'),
+                    pygame.image.load('Data/ogr boss/death/5.png'),
+                    pygame.image.load('Data/ogr boss/death/6.png'),
+                    pygame.image.load('Data/ogr boss/death/7.png')]
+
+ogre_boss_walk = [pygame.image.load('Data/ogr boss/walk/1.png'), pygame.image.load('Data/ogr boss/walk/2.png'),
+                   pygame.image.load('Data/ogr boss/walk/3.png'), pygame.image.load('Data/ogr boss/walk/4.png'),
+                   pygame.image.load('Data/ogr boss/walk/5.png'), pygame.image.load('Data/ogr boss/walk/6.png'),
+                   pygame.image.load('Data/ogr boss/walk/7.png')]
 
 
 def logo(screen, width, height):
@@ -427,6 +434,7 @@ class Boss(Enemy):
         self.hpBar = Boss_HPbar(self, [all_boss_sprites, tools])
         self.attackTrigger = False
         self.deathTrigger = False
+        self.walkTrigger = True
         self.fon = fon
 
     def draw_boss_name(self):
@@ -467,6 +475,12 @@ class Boss(Enemy):
             self.attackTrigger = True
         else:
             self.attackTrigger = False
+
+    def walk(self):
+        self.walkTrigger = True
+        self.cur_frame = -1
+        self.walkClock = 0
+        self.frames = self.frames_walk
 
 
 class FireBoss(Boss):
@@ -522,7 +536,9 @@ class Summoner(Boss):
 
 
 class Ogre(Boss):
-    pass
+    def update(self):
+        super().update()
+
 
 
 class Bullet(pygame.sprite.Sprite):
