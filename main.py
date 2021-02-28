@@ -195,7 +195,6 @@ class Player(pygame.sprite.Sprite):
             if self.attackClock == len(self.frames) * 3:
                 self.attackTrigger = False
                 if self.archeryTrigger:
-                    print(self.archery_coords, self.archery_group)
                     self.archery(*self.archery_coords, self.archery_group)
                     self.archeryTrigger = False
                     return
@@ -272,27 +271,27 @@ class Ground(pygame.sprite.Sprite):
 
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, player, group, all_sprites, tools, hp=10):
+    def __init__(self, x, y, player, group, all_sprites, tools, hp=10,
+                 attack=None, idle=None, walk=None, death=None):
         super().__init__(*group)
-        self.image = pygame.Surface([width, height])
-        self.image.fill((0, 255, 0))
-        self.rect = pygame.Rect(x, y, width, height)
-        self.vx = 0
-        self.vy = 300 * speedPerFrame
         self.player = player
         self.hp = hp
-        self.hpBar = HPbar(self, width, hp, [all_sprites, tools])
-        self.width = width
-        self.height = height
+        self.attackTrigger = False
+        self.attackClock = 0
 
-    def EnemyAI(self):
-        if self.player.rect.x + self.player.width // 2 > self.rect.x + self.rect.width // 2:
-            self.vx = 100 * speedPerFrame
-        elif self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
-            self.vx = -100 * speedPerFrame
-        else:
-            self.vx = 0
-        self.rect = self.rect.move(self.vx, 0)
+        self.frames_walk = walk
+        self.frames_idle = idle
+        self.frames_attack = attack
+        self.frames_death = death
+        self.frames = self.frames_idle
+        self.rect = pygame.Rect(x, y, self.frames_idle[0].get_width(),
+                                self.frames_idle[0].get_height())
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect.y = ground.rect.y - self.frames[self.cur_frame].get_height()
+        if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+            self.image = pygame.transform.flip(self.image, True, False)
+        self.hpBar = HPbar(self, self.frames_walk[0].get_width(), 10, [all_sprites, tools])
 
     def update(self):
         if self.hp <= 0:
@@ -300,141 +299,58 @@ class Enemy(pygame.sprite.Sprite):
             self.hpBar.kill()
             self.kill()
             return
-        if pygame.sprite.spritecollideany(self, ground_layer):
-            self.EnemyAI()
-        else:
-            self.rect = self.rect.move(self.vx, self.vy)
-        if collisionClock % 5 == 0:
-            if pygame.sprite.spritecollideany(self, player_group):
-                player.hp -= 1
-            if pygame.sprite.spritecollideany(self, maintowergroup):
-                mainTower.hp -= 1
-
-
-class Easy_enemy(Enemy):
-    def __init__(self, x, y, width, height, player, group, all_sprites, tools, hp=10):
-        super().__init__(x, y, width, height, player, group, all_sprites, tools, hp=10)
-        self.frames_walk = easy_enemy_walk
-        self.frames_idle = easy_enemy_idle
-        self.frames_attack = easy_enemy_attack
-        self.frames = self.frames_idle
-        self.cur_frame = 0
-        self.image = self.frames[self.cur_frame]
-        if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
-            self.image = pygame.transform.flip(self.image, True, False)
-        self.rect = pygame.Rect(0, 0, self.frames_idle[0].get_width(),
-                                self.frames_idle[0].get_height())
-        self.rect = self.rect.move(x, y)
-
-        self.width = self.frames_idle[0].get_width()
-        self.hpBar.kill()
-        self.hpBar = HPbar(self, self.frames_walk[0].get_width(), 10, [all_sprites, tools])
-
-        self.count = 0
-        self.attackTrigger = False
-
-    def EnemyAI(self):
-        if not self.attackTrigger:
-            super().EnemyAI()
         if self.rect.x + self.rect.width // 2 in \
-                range(self.player.rect.x + self.player.rect.width // 2 - 10,
-                      self.player.rect.x + self.player.rect.width // 2 + 10):
+                range(self.player.rect.x,
+                      self.player.rect.x + self.player.rect.width):
+            if not self.attackTrigger:
+                self.cur_frame = -1
+                self.frames = self.frames_attack
             self.attackTrigger = True
         else:
             self.attackTrigger = False
-
-    def update(self):
-        super().update()
-        self.count += 1
-        if self.count % 4 == 0:
+        if self.attackTrigger:
+            self.attackClock += 1
+            self.frames = self.frames_attack
+            if collisionClock % 4 == 3:
+                self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+                self.image = self.frames[self.cur_frame]
+                self.rect.y = ground.rect.y - self.frames[self.cur_frame].get_height()
+                if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                    self.image = pygame.transform.flip(self.image, True, False)
+            if self.attackClock == 4 * len(self.frames):
+                self.attackClock = 0
+                self.attackTrigger = False
+                self.player.hp -= 5
+                self.cur_frame = -1
+            return
+        if collisionClock % 3 == 2:
+            self.frames = self.frames_walk
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
+            self.rect.y = ground.rect.y - self.frames[self.cur_frame].get_height()
             if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                 self.image = pygame.transform.flip(self.image, True, False)
-        if not self.attackTrigger:
-            if self.cur_frame == 0:
-                if -1 <= self.vx <= 1:
-                    self.frames = self.frames_idle
-                else:
-                    self.frames = self.frames_walk
-        else:
-            self.frames = self.frames_attack
-
-
-class Giant_enemy(Enemy):
-    def __init__(self, x, y, width, height, player, group, all_sprites, tools, hp=25):
-        super().__init__(x, y, width, height, player, group, all_sprites, tools, hp=hp)
-        self.frames_walk = giant_enemy_walk
-        self.frames_idle = giant_enemy_idle
-        self.frames_attack = giant_enemy_attack
-        self.frames = self.frames_idle
-        self.cur_frame = 0
-        self.image = self.frames[self.cur_frame]
-        if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
-            self.image = pygame.transform.flip(self.image, True, False)
-        self.rect = pygame.Rect(0, 0, self.frames_idle[0].get_width(),
-                                self.frames_idle[0].get_height())
-        self.rect = self.rect.move(x, y)
-
-        self.width = self.frames_idle[0].get_width()
-        self.hpBar.kill()
-        self.hpBar = HPbar(self, self.frames_walk[0].get_width(), 10, [all_sprites, tools])
-
-        self.count = 0
-        self.attackTrigger = False
-
-    def EnemyAI(self):
-        if not self.attackTrigger:
-            super().EnemyAI()
-        if self.rect.x + self.rect.width // 2 in \
-                range(self.player.rect.x + 30, self.player.rect.x + self.player.rect.width - 30):
-            self.attackTrigger = True
-        else:
-            self.attackTrigger = False
-
-    def update(self):
-        super().update()
-        self.count += 1
-        if self.count % 4 == 0:
-            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-            self.image = self.frames[self.cur_frame]
-            if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
-                self.image = pygame.transform.flip(self.image, True, False)
-        if not self.attackTrigger:
-            if self.cur_frame == 0:
-                if -1 <= self.vx <= 1:
-                    self.frames = self.frames_idle
-                else:
-                    self.frames = self.frames_walk
-        else:
-            self.frames = self.frames_attack
-
+            if self.player.rect.x + self.player.width // 2 > self.rect.x + self.rect.width // 2:
+                self.rect.x += 340 * speedPerFrame
+            elif self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                self.rect.x -= 300 * speedPerFrame
 
 
 class Boss(Enemy):
     def __init__(self, x, y, player, group, all_boss_sprites, tools, name, hp, fon,
                  attack=None, idle=None, walk=None, death=None):
         self.frames_idle = idle
-        super().__init__(x, y, self.frames_idle[0].get_width(),
-                         self.frames_idle[0].get_height(), player, group, all_boss_sprites, tools, hp)
-        self.frames_walk = walk
-        self.frames_attack = attack
-        self.frames_death = death
-        self.frames = self.frames_idle
-        self.cur_frame = 0
-        self.image = self.frames[self.cur_frame]
-        if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
-            self.image = pygame.transform.flip(self.image, True, False)
-        self.rect = pygame.Rect(0, 0, self.frames_idle[0].get_width(),
-                                self.frames_idle[0].get_height())
-        self.rect = self.rect.move(x, y)
-
+        super().__init__(x, y, player, group, all_boss_sprites, tools, hp, attack=attack, idle=idle,
+                         walk=walk, death=death)
         self.name = name
         self.hpBar.kill()
         self.hpBar = Boss_HPbar(self, [all_boss_sprites, tools])
+
+        self.attackClock = 0
+        self.abilityClock = 0
+        self.abilityTrigger = False
         self.attackTrigger = False
         self.deathTrigger = False
-        self.walkTrigger = True
         self.fon = fon
 
     def draw_boss_name(self):
@@ -467,19 +383,18 @@ class Boss(Enemy):
             money.amount += 100
             self.death()
             return
-        if not pygame.sprite.spritecollideany(self, ground_layer):
-            self.rect.y += 300 * speedPerFrame
         if self.rect.x + self.rect.width // 2 in \
                 range(self.player.rect.x + self.player.rect.width // 2 - 10,
                       self.player.rect.x + self.player.rect.width // 2 + 10):
+            if not self.attackTrigger:
+                self.cur_frame = -1
+                self.frames = self.frames_attack
             self.attackTrigger = True
         else:
             self.attackTrigger = False
 
     def walk(self):
-        self.walkTrigger = True
         self.cur_frame = -1
-        self.walkClock = 0
         self.frames = self.frames_walk
 
 
@@ -493,6 +408,7 @@ class FireBoss(Boss):
         if collisionClock % 4 == 3:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
+            self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height()
             if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                 self.image = pygame.transform.flip(self.image, True, False)
         if collisionClock % 64 == 31:
@@ -538,7 +454,51 @@ class Summoner(Boss):
 class Ogre(Boss):
     def update(self):
         super().update()
-
+        if self.deathTrigger:
+            return
+        self.abilityClock += 1
+        if self.abilityClock % 270 == 0:
+            self.abilityClock = 0
+            self.cur_frame = -1
+            self.abilityTrigger = True
+        if self.abilityTrigger and not self.attackTrigger:
+            self.frames = self.frames_attack
+            if self.abilityClock % 4 == 3:
+                self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+                self.image = self.frames[self.cur_frame]
+                self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height()
+                if width // 2 < self.rect.x + self.rect.width // 2:
+                    self.image = pygame.transform.flip(self.image, True, False)
+            if self.abilityClock % 270 == 90:
+                self.abilityTrigger = False
+                self.cur_frame = -1
+            return
+        if self.attackTrigger:
+            self.attackClock += 1
+            self.frames = self.frames_attack
+            if collisionClock % 4 == 3:
+                self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+                self.image = self.frames[self.cur_frame]
+                self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height()
+                if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                    self.image = pygame.transform.flip(self.image, True, False)
+            if self.attackClock == 4 * len(self.frames):
+                self.attackClock = 0
+                self.attackTrigger = False
+                self.player.hp -= 30
+                self.cur_frame = -1
+            return
+        if collisionClock % 4 == 3:
+            self.frames = self.frames_walk
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+            self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height()
+            if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                self.image = pygame.transform.flip(self.image, True, False)
+            if self.player.rect.x + self.player.width // 2 > self.rect.x + self.rect.width // 2:
+                self.rect.x += 180 * speedPerFrame
+            elif self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                self.rect.x -= 150 * speedPerFrame
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -588,8 +548,8 @@ class HPbar(pygame.sprite.Sprite):
         self.height = height
 
     def update(self):
-        self.rect = pygame.Rect(self.player.rect.x - self.width // 2 + self.player.width // 2,
-                                self.player.rect.y - self.height * 2, self.width, self.height)
+        self.rect = pygame.Rect(self.player.rect.x - self.rect.width // 2 + self.player.rect.width // 2,
+                                self.player.rect.y - self.rect.height * 2, self.rect.width, self.rect.height)
         self.hp = self.player.hp
         self.image.fill((255, 255, 255))
         pygame.draw.rect(self.image, pygame.Color((255, 0, 0)),
@@ -650,9 +610,13 @@ def newWave(typesOfEnemies):
         enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
         x = random.randrange(ground.rect.x, ground.rect.x + ground.rect.width - 50, 1)
         if enemy == 'goblin':
-            enemy = Easy_enemy(x, ground.rect.y - 100, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
+            enemy = Enemy(x, ground.rect.y - 100, player, [all_sprites, enemies],
+                               all_sprites, tools, hp=10, attack=easy_enemy_attack,
+                               walk=easy_enemy_walk, idle=easy_enemy_idle)
         elif enemy == 'giant':
-            enemy = Giant_enemy(x, ground.rect.y - 100, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
+            enemy = Enemy(x, ground.rect.y - 100, mainTower, [all_sprites, enemies],
+                                all_sprites, tools, hp=25, attack=giant_enemy_attack,
+                                walk=giant_enemy_walk, idle=giant_enemy_idle)
 
 
 if __name__ == '__main__':
@@ -687,6 +651,8 @@ if __name__ == '__main__':
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+            condition_trigger = 0
+            fps = 30
             i += 1
             if i == 600:
                 fps = 30
@@ -781,11 +747,23 @@ if __name__ == '__main__':
                                 event.pos[0] < portal.rect.x + portal.rect.width and\
                                 event.pos[1] > portal.rect.y and\
                                 event.pos[1] < portal.rect.y + portal.rect.height:
-                            name = 'Wizard'
-                            boss = FireBoss(width - 200, height // 8 * 4, player,
+                            if False:
+                                name = 'Wizard'
+                                boss = FireBoss(width - 200, height // 8 * 4, player,
+                                                [all_boss_sprites, boss_group], all_boss_sprites,
+                                                tools, name, 100, pygame.image.load('Data/fon4.png'),
+                                                attack=fire_boss_attack, idle=fire_boss_idle, death=fire_boss_death)
+                                boss_ground = Ground(0, height // 4 * 3 - 50, width, [all_boss_sprites, ground_layer])
+                                condition_trigger = 4
+                                f1 = False
+                                collisionClock = 0
+                                continue
+                            name = 'Ogre'
+                            boss = Ogre(width - 200, height // 8 * 4, player,
                                             [all_boss_sprites, boss_group], all_boss_sprites,
-                                            tools, name, 100, pygame.image.load('Data/fon4.png'),
-                                            attack=fire_boss_attack, idle=fire_boss_idle, death=fire_boss_death)
+                                            tools, name, 300, pygame.image.load('Data/fon4.png'),
+                                            attack=ogre_boss_attack, walk=ogre_boss_walk,
+                                            idle=ogre_boss_idle, death=ogre_boss_death)
                             boss_ground = Ground(0, height // 4 * 3 - 50, width, [all_boss_sprites, ground_layer])
                             condition_trigger = 4
                             f1 = False
@@ -823,7 +801,7 @@ if __name__ == '__main__':
                 # vertical move end
 
                 # enemies spawn
-                if int(time) % 10 == 0:
+                if int(time) % 6 == 0:
                     time += 1
                     newWave(typesOfEnemies)
                 # Main act
