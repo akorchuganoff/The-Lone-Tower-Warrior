@@ -99,7 +99,7 @@ def menuScreen(screen, width, height, colorkey):
     screen.blit(pygame.image.load('Data/menu/no continue2.gif'), (300, 100))
     screen.blit(pygame.image.load('Data/menu/new game.gif'), (300, 250))
     screen.blit(pygame.image.load('Data/menu/exit.gif'), (300, 400))
-    start_pos, continue_pos, exit_pos = (500, 300, 700, 380), (500, 160, 700, 240), (500, 700, 470, 540)
+    start_pos, continue_pos, exit_pos = (500, 300, 700, 380), (500, 160, 700, 240), (500, 470, 700, 540)
     return start_pos, continue_pos, exit_pos
 
 
@@ -696,7 +696,7 @@ if __name__ == '__main__':
                     elif continue_pos[0] <= x <= continue_pos[2] and continue_pos[1] <= y <= continue_pos[3]:
                         print('continue')
                     elif exit_pos[0] <= x <= exit_pos[2] and exit_pos[1] <= y <= exit_pos[3]:
-                        print('stats')
+                        running = False
             menuScreen(screen, width, height, colorkey)
 
         elif condition_trigger == 2:
