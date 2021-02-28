@@ -254,7 +254,7 @@ class Giant_enemy(Enemy):
 
 
 class Boss(Enemy):
-    def __init__(self, x, y, width, height, player, group, all_boss_sprites, tools, name, hp,
+    def __init__(self, x, y, width, height, player, group, all_boss_sprites, tools, name, hp, fon,
                  attack=None, idle=None, walk=None, death=None):
         super().__init__(x, y, width, height, player, group, all_boss_sprites, tools, hp)
         self.frames_walk = walk
@@ -273,9 +273,10 @@ class Boss(Enemy):
         self.hpBar.kill()
         self.hpBar = Boss_HPbar(self, [all_boss_sprites, tools])
         self.attackTrigger = False
-
+        self.fon = fon
 
     def draw_boss_name(self):
+        screen.blit(self.fon, (-100, 0))
         font = pygame.font.Font(None, 50)
         text = font.render(self.name, True, (200, 200, 200))
         text_x = width // 2 - text.get_width() // 2
@@ -312,7 +313,6 @@ class FireBoss(Boss):
             if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                 self.image = pygame.transform.flip(self.image, True, False)
         if collisionClock % 32 == 31:
-            print('dsojdsojf')
             if player.rect.x < self.rect.x + self.rect.width // 2:
                 d = - 1
             else:
@@ -328,7 +328,6 @@ class FireBoss(Boss):
         if collisionClock % 5 == 0:
             if pygame.sprite.spritecollideany(self, player_group):
                 player.hp -= 1
-
 
 
 class Summoner(Boss):
@@ -430,20 +429,6 @@ class Money(pygame.sprite.Sprite):
         screen.blit(text, (text_x, text_y))
 
 
-def newWave(typesOfEnemies):
-    global waves
-    waves += 1
-    for i in range(waves):
-        enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
-        x = random.randrange(ground.rect.x, ground.rect.x + ground.rect.width - 50, 1)
-        if enemy == 'goblin':
-            enemy = Easy_enemy(x, ground.rect.y - 100, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
-        elif enemy == 'giant':
-            enemy = Giant_enemy(x, ground.rect.y - 100, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
-
-        print(x, ground.rect.x, )
-
-
 class Camera:
     # зададим начальный сдвиг камеры
     def __init__(self):
@@ -461,12 +446,49 @@ class Camera:
         self.dy = -(target.rect.y + target.rect.h // 2 - height // 4 * 3)
 
 
+def newWave(typesOfEnemies):
+    global waves
+    waves += 1
+    for i in range(waves):
+        enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
+        x = random.randrange(ground.rect.x, ground.rect.x + ground.rect.width - 50, 1)
+        if enemy == 'goblin':
+            enemy = Easy_enemy(x, ground.rect.y - 100, 30, 30, player, [all_sprites, enemies], all_sprites, tools)
+        elif enemy == 'giant':
+            enemy = Giant_enemy(x, ground.rect.y - 100, 50, 50, mainTower, [all_sprites, enemies], all_sprites, tools)
+
+
+def archery(x1, y1, x2, y2, group):
+    if x1 >= x2:
+        dx = 1
+    else:
+        dx = -1
+    if y1 >= y2:
+        dy = 1
+    else:
+        dy = -1
+    if y1 - y2 != 0:
+        vy2 = int(500 ** 2 / (((x1 - x2) / (y1 - y2)) ** 2 + 1))
+    else:
+        vy2 = 0
+    vx2 = 500 ** 2 - vy2
+    vy = vy2 ** 0.5 * dy
+    vx = vx2 ** 0.5
+    if vx != 0:
+        angle = math.degrees(math.atan(-vy / vx))
+    else:
+        angle = 90
+    arrow = pygame.transform.rotate(pygame.image.load('Data/arrow2.png'), angle)
+    return Bullet(player.rect.x + player.width // 2,
+           player.rect.y - player.rect.height // 2, arrow, dx, vx, 5,
+           'enemies', [group, bullets], vy)
+
+
 if __name__ == '__main__':
     pygame.init()
     size = width, height = 1200, 800
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
-    image = pygame.image.load('Data/fon4.png')
     image2 = pygame.image.load('Data/fon.png')
 
     running = True
@@ -475,11 +497,9 @@ if __name__ == '__main__':
     vertical_speed = 500
 
     typesOfEnemies = ['goblin', 'giant']
-
     condition_trigger = -1
     collisionClock = 0
     time = 0
-
     camera = Camera()
 
     while running:
@@ -500,6 +520,7 @@ if __name__ == '__main__':
                     start_pos, continue_pos, stats_pos = menuScreen(screen, width, height)
                     if start_pos[0] <= x <= start_pos[2] and start_pos[1] <= y <= start_pos[3]:
                         print('start')
+                        collisionClock = 0
                         condition_trigger = 2
 
                         # start game
@@ -576,10 +597,11 @@ if __name__ == '__main__':
                                 event.pos[0] < portal.rect.x + portal.rect.width and\
                                 event.pos[1] > portal.rect.y and\
                                 event.pos[1] < portal.rect.y + portal.rect.height:
-                            name = 'Fireboss'
+                            name = 'Wizard'
                             boss = FireBoss(width - 200, height // 8 * 4, 100, 100, player,
                                             [all_boss_sprites, boss_group], all_boss_sprites,
-                                            tools, name, 300, attack=fire_boss_attack, idle=fire_boss_idle)
+                                            tools, name, 300, pygame.image.load('Data/fon4.png'),
+                                            attack=fire_boss_attack, idle=fire_boss_idle)
                             boss_ground = Ground(0, height // 4 * 3 - 100, width, [all_boss_sprites, ground_layer])
                             condition_trigger = 4
                             f1 = False
@@ -590,31 +612,7 @@ if __name__ == '__main__':
                         elif event.button == 3:
                             x1, y1 = event.pos
                             x2, y2 = player.rect.x + player.width // 2, player.rect.y + player.height // 2
-                            print((x1, y1), (x2, y2))
-                            if x1 >= x2:
-                                dx = 1
-                            else:
-                                dx = -1
-                            if y1 >= y2:
-                                dy = 1
-                            else:
-                                dy = -1
-                            if y1 - y2 != 0:
-                                vy2 = int(500 ** 2 / (((x1 - x2) / (y1 - y2)) ** 2 + 1))
-                            else:
-                                vy2 = 0
-                            vx2 = 500 ** 2 - vy2
-                            vy = vy2 ** 0.5 * dy
-                            vx = vx2 ** 0.5
-                            if vx != 0:
-                                angle = math.degrees(math.atan(-vy / vx))
-                            else:
-                                angle = 90
-                            print(angle)
-                            arrow = pygame.transform.rotate(pygame.image.load('Data/arrow2.png'), angle)
-                            Bullet(player.rect.x + player.width // 2,
-                                   player.rect.y - player.rect.height // 2, arrow,
-                                   dx, vx, 5, 'enemies', [all_sprites, bullets], vy)
+                            archery(x1, y1, x2, y2, all_sprites)
                 if player.hp <= 0 or mainTower.hp <= 0:
                     condition_trigger = 3
 
@@ -739,29 +737,7 @@ if __name__ == '__main__':
                     elif event.button == 3:
                         x1, y1 = event.pos
                         x2, y2 = player.rect.x + player.width // 2, player.rect.y + player.height // 2
-                        if x1 >= x2:
-                            dx = 1
-                        else:
-                            dx = -1
-                        if y1 >= y2:
-                            dy = 1
-                        else:
-                            dy = -1
-                        if y1 - y2 != 0:
-                            vy2 = int(500 ** 2 / (((x1 - x2) / (y1 - y2)) ** 2 + 1))
-                        else:
-                            vy2 = 0
-                        vx2 = 500 ** 2 - vy2
-                        vy = vy2 ** 0.5 * dy
-                        vx = vx2 ** 0.5
-                        if vx != 0:
-                            angle = math.degrees(math.atan(-vy / vx))
-                        else:
-                            angle = 90
-                        arrow = pygame.transform.rotate(pygame.image.load('Data/arrow2.png'), angle)
-                        Bullet(player.rect.x + player.width // 2,
-                               player.rect.y - player.rect.height // 2, arrow, dx, vx, 5,
-                               'enemies', [all_boss_sprites, bullets], vy)
+                        archery(x1, y1, x2, y2, all_boss_sprites)
             if boss.hp <= 0:
                 player.rect.x = mainTower.rect.x + mainTower.rect.width // 2
                 for elem in boss_group:
@@ -800,7 +776,6 @@ if __name__ == '__main__':
             # vertical move end
             # Main act
             screen.fill((0, 0, 0))
-            screen.blit(image, (-100, 0))
             boss.draw_boss_name()
             all_boss_sprites.draw(screen)
             all_boss_sprites.update()
