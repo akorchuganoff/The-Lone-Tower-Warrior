@@ -51,6 +51,12 @@ fire_boss_attack = [pygame.image.load('Data/fire boss/idle.png'),
                     pygame.image.load('Data/fire boss/attack/4.png'),
                     pygame.image.load('Data/fire boss/attack/5.png')]
 
+fire_boss_death = [pygame.image.load('Data/fire boss/death/1.png'),
+                    pygame.image.load('Data/fire boss/death/2.png'),
+                    pygame.image.load('Data/fire boss/death/3.png'),
+                    pygame.image.load('Data/fire boss/death/4.png'),
+                    pygame.image.load('Data/fire boss/death/5.png')]
+
 
 class MainTower(pygame.sprite.Sprite):
     def __init__(self, x, y, hp, group, all_sprites, tools):
@@ -260,6 +266,7 @@ class Boss(Enemy):
         self.frames_walk = walk
         self.frames_attack = attack
         self.frames_idle = idle
+        self.frames_death = death
         self.frames = self.frames_idle
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
@@ -273,6 +280,7 @@ class Boss(Enemy):
         self.hpBar.kill()
         self.hpBar = Boss_HPbar(self, [all_boss_sprites, tools])
         self.attackTrigger = False
+        self.deathTrigger = False
         self.fon = fon
 
     def draw_boss_name(self):
@@ -285,11 +293,25 @@ class Boss(Enemy):
         text_h = text.get_height()
         screen.blit(text, (text_x, text_y))
 
+    def death(self):
+        self.cur_frame = -1
+        self.deathClock = 0
+        self.deathTrigger = True
+        self.frames = self.frames_death
+
     def update(self):
+        if self.deathTrigger:
+            if self.deathClock % 7 == 1:
+                self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+                self.image = self.frames[self.cur_frame]
+            if self.deathClock == len(self.frames) * 7:
+                self.hpBar.kill()
+                self.kill()
+            self.deathClock += 1
+            return
         if self.hp <= 0:
             money.amount += 100
-            self.hpBar.kill()
-            self.kill()
+            self.death()
             return
         if not pygame.sprite.spritecollideany(self, ground_layer):
             self.rect.y += 300 * speedPerFrame
@@ -305,6 +327,8 @@ class Boss(Enemy):
 class FireBoss(Boss):
     def update(self):
         super().update()
+        if self.deathTrigger:
+            return
         self.attackTrigger = True
         self.frames = self.frames_attack
         if collisionClock % 4 == 3:
@@ -521,6 +545,7 @@ if __name__ == '__main__':
                     if start_pos[0] <= x <= start_pos[2] and start_pos[1] <= y <= start_pos[3]:
                         print('start')
                         collisionClock = 0
+                        time = 1
                         condition_trigger = 2
 
                         # start game
@@ -600,8 +625,8 @@ if __name__ == '__main__':
                             name = 'Wizard'
                             boss = FireBoss(width - 200, height // 8 * 4, 100, 100, player,
                                             [all_boss_sprites, boss_group], all_boss_sprites,
-                                            tools, name, 300, pygame.image.load('Data/fon4.png'),
-                                            attack=fire_boss_attack, idle=fire_boss_idle)
+                                            tools, name, 100, pygame.image.load('Data/fon4.png'),
+                                            attack=fire_boss_attack, idle=fire_boss_idle, death=fire_boss_death)
                             boss_ground = Ground(0, height // 4 * 3 - 100, width, [all_boss_sprites, ground_layer])
                             condition_trigger = 4
                             f1 = False
@@ -724,7 +749,6 @@ if __name__ == '__main__':
                         for elem in all_boss_sprites:
                             if elem != player and elem != player.PlayerHPbar:
                                 elem.kill()
-                        condition_trigger = 2
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_RIGHT:
                         right_trigger = False
@@ -738,20 +762,8 @@ if __name__ == '__main__':
                         x1, y1 = event.pos
                         x2, y2 = player.rect.x + player.width // 2, player.rect.y + player.height // 2
                         archery(x1, y1, x2, y2, all_boss_sprites)
-            if boss.hp <= 0:
-                player.rect.x = mainTower.rect.x + mainTower.rect.width // 2
-                for elem in boss_group:
-                    elem.hpBar.kill()
-                    elem.kill()
-                for elem in bullets:
-                    elem.kill()
-                for elem in all_boss_sprites:
-                    if elem != player and elem != player.PlayerHPbar:
-                        elem.kill()
-                    condition_trigger = 2
             if player.hp <= 0 or mainTower.hp <= 0:
                 condition_trigger = 3
-                # condition_trigger = 2
 
             # horizontal move begin
             if left_trigger:
