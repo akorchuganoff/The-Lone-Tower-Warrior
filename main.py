@@ -829,7 +829,6 @@ if __name__ == '__main__':
                         collisionClock = 0
                         time = 1
                         condition_trigger = 2
-
                         # start game
                         all_sprites = pygame.sprite.Group()
                         all_boss_sprites = pygame.sprite.Group()
@@ -855,9 +854,7 @@ if __name__ == '__main__':
                         ground = Ground(-700, height // 4 * 3, width, [all_sprites, ground_layer], sprite=True)
                         shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
-                        # portal way
                         portal = Portal([all_sprites, portal_group])
-
                         # movement triggers
                         right_trigger = False
                         left_trigger = False
@@ -872,7 +869,6 @@ if __name__ == '__main__':
                     elif exit_pos[0] <= x <= exit_pos[2] and exit_pos[1] <= y <= exit_pos[3]:
                         running = False
             menuScreen(screen, width, height, colorkey)
-
 
         elif condition_trigger == 2:
             if not shop_trigger:
@@ -890,7 +886,6 @@ if __name__ == '__main__':
                             right_trigger = False
                             left_trigger = True
                         # horizontal move end
-
                         # vertical move
                         elif event.key == pygame.K_UP:
                             s = pygame.mixer.Sound('Data/sounds/bow_jump.mp3')
@@ -907,7 +902,6 @@ if __name__ == '__main__':
                         elif event.key == pygame.K_LEFT:
                             left_trigger = False
                         # horizontal move end
-
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1 and\
                                 event.pos[0] > portal.rect.x and\
@@ -1062,15 +1056,19 @@ if __name__ == '__main__':
                 player.vy = vertical_speed * speedPerFrame
 
             if not isAlive:
+                for elem in enemies:
+                    elem.hpBar.kill()
+                    elem.kill()
                 endClock += 1
             if not isAlive and endClock == 180:
-                for elem in enemies:
-                    elem.kill()
                 for elem in ground_layer:
+                    elem.kill()
+                for elem in bullets:
                     elem.kill()
                 player.rect.y, player.rect.x = player_pos[0], player_pos[1]
                 ground = Ground(ground_pos[0], ground_pos[1], width, [all_sprites, ground_layer], sprite=True)
                 condition_trigger = 2
+                collisionClock = 0
             # vertical move end
             # Main act
             screen.fill((0, 0, 0))
@@ -1085,6 +1083,7 @@ if __name__ == '__main__':
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     pos = event.pos
+                    f2 = False
                     if curBoss >= 1 and 100 < pos[0] < 400  and 300 < pos[1] < 500:
                         pygame.mixer.music.set_volume(0.2)
                         pygame.mixer.music.load('Data/sounds/summoner music.mp3')
@@ -1096,15 +1095,7 @@ if __name__ == '__main__':
                                         attack=summoner_boss_attack, walk=summoner_boss_walk,
                                         idle=summoner_boss_idle, death=summoner_boss_death)
                         boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
-                        condition_trigger = 4
-                        f1 = False
-                        collisionClock = 0
-                        ground_pos = (ground.rect.x, ground.rect.y)
-                        player_pos = (player.rect.x, player.rect.y)
-                        ground.rect.y = height // 8 * 7
-                        isAlive = True
-                        endClock = 0
-                        player_pos = (player.rect.x, player.rect.y)
+                        f2 = True
                     elif curBoss >= 2 and 450 < pos[0] < 750  and 300 < pos[1] < 500:
                         pygame.mixer.music.set_volume(0.1)
                         pygame.mixer.music.load('Data/sounds/wizard music.mp3')
@@ -1115,14 +1106,7 @@ if __name__ == '__main__':
                                         tools, name, 100, pygame.image.load('Data/fon4.png'),
                                         attack=fire_boss_attack, idle=fire_boss_idle, death=fire_boss_death)
                         boss_ground = Ground(0, height // 4 * 3 - 50, width, [all_boss_sprites, ground_layer])
-                        condition_trigger = 4
-                        f1 = False
-                        collisionClock = 0
-                        ground_pos = (ground.rect.x, ground.rect.y)
-                        player_pos = (player.rect.x, player.rect.y)
-                        ground.kill()
-                        isAlive = True
-                        endClock = 0
+                        f2 = True
                     elif curBoss >= 3 and 800 < pos[0] < 1100  and 300 < pos[1] < 500:
                         pygame.mixer.music.set_volume(0.2)
                         pygame.mixer.music.load('Data/sounds/ogre music.mp3')
@@ -1134,15 +1118,22 @@ if __name__ == '__main__':
                                     attack=ogre_boss_attack, walk=ogre_boss_walk,
                                     idle=ogre_boss_idle, death=ogre_boss_death)
                         boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
+                        f2 = True
+                    if f2:
                         condition_trigger = 4
                         f1 = False
                         collisionClock = 0
                         ground_pos = (ground.rect.x, ground.rect.y)
                         player_pos = (player.rect.x, player.rect.y)
-                        ground.kill()
+                        ground.rect.y = height // 8 * 7
                         isAlive = True
                         endClock = 0
                         player_pos = (player.rect.x, player.rect.y)
+                        for elem in enemies:
+                            elem.hpBar.kill()
+                            elem.kill()
+                        for elem in bullets:
+                            elem.kill()
 
         collisionClock += 1
         time += speedPerFrame
