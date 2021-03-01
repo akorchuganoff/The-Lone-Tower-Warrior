@@ -182,10 +182,20 @@ def shopScreen1(screen):
     screen.blit(pygame.image.load('Data/shop/heart.png'), (500, 130))
     screen.blit(pygame.image.load('Data/shop/tower.png'), (925, 125))
     screen.blit(pygame.image.load('Data/shop/heart.png'), (125, 130 + 375))
+    screen.blit(pygame.image.load('Data/shop/tower.png'), (175, 130 + 375))
     screen.blit(pygame.image.load('Data/shop/potion.png'), (475 + 48, 130 + 375))
     screen.blit(pygame.image.load('Data/shop/bow.png'), (125 + 375 * 2, 125 + 375))
 
-    screen.blit(pygame.image.load('Data/shop/attack.gif'), (159, 69))
+    screen.blit(pygame.image.load('Data/shop/attack.gif'), (159, 68))
+    screen.blit(pygame.image.load('Data/shop/health.gif'), (161 + 375, 69))
+    screen.blit(pygame.image.load('Data/shop/tower.gif'), (170 + 375 * 2, 68))
+    # heal tower
+    screen.blit(pygame.image.load('Data/shop/heal.gif'), (120, 69 + 375))
+    screen.blit(pygame.image.load('Data/shop/tower.gif'), (220, 68 + 375))
+    #
+    screen.blit(pygame.image.load('Data/shop/potion.gif'), (475 + 65, 68 + 375))
+    screen.blit(pygame.image.load('Data/shop/arrows.gif'), (475 + 375 + 29, 66 + 375))
+
 
 
 
