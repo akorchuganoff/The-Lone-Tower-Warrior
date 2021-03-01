@@ -1039,7 +1039,8 @@ if __name__ == '__main__':
                     elem.kill()
                 for elem in ground_layer:
                     elem.kill()
-                ground = Ground(-300, height // 4 * 3, width, [all_sprites, ground_layer], sprite=True)
+                player.rect.y, player.rect.x = player_pos[0], player_pos[1]
+                ground = Ground(ground_pos[0], ground_pos[1], width, [all_sprites, ground_layer], sprite=True)
                 condition_trigger = 2
             # vertical move end
             # Main act
@@ -1069,9 +1070,12 @@ if __name__ == '__main__':
                         condition_trigger = 4
                         f1 = False
                         collisionClock = 0
+                        ground_pos = (ground.rect.x, ground.rect.y)
+                        player_pos = (player.rect.x, player.rect.y)
                         ground.rect.y = height // 8 * 7
                         isAlive = True
                         endClock = 0
+                        player_pos = (player.rect.x, player.rect.y)
                     elif curBoss >= 2 and 450 < pos[0] < 750  and 300 < pos[1] < 500:
                         pygame.mixer.music.set_volume(0.1)
                         pygame.mixer.music.load('Data/sounds/wizard music.mp3')
@@ -1085,6 +1089,8 @@ if __name__ == '__main__':
                         condition_trigger = 4
                         f1 = False
                         collisionClock = 0
+                        ground_pos = (ground.rect.x, ground.rect.y)
+                        player_pos = (player.rect.x, player.rect.y)
                         ground.kill()
                         isAlive = True
                         endClock = 0
@@ -1102,9 +1108,12 @@ if __name__ == '__main__':
                         condition_trigger = 4
                         f1 = False
                         collisionClock = 0
+                        ground_pos = (ground.rect.x, ground.rect.y)
+                        player_pos = (player.rect.x, player.rect.y)
                         ground.kill()
                         isAlive = True
                         endClock = 0
+                        player_pos = (player.rect.x, player.rect.y)
 
         collisionClock += 1
         time += speedPerFrame
