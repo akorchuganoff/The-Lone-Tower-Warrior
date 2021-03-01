@@ -432,6 +432,9 @@ class Boss(Enemy):
         self.deathTrigger = True
         self.frames = self.frames_death
         isAlive = False
+        pygame.mixer.music.set_volume(0.6)
+        pygame.mixer.music.load('Data/sounds/boss win.mp3')
+        pygame.mixer.music.play(loops=0)
 
     def update(self):
         if self.deathTrigger:
@@ -1032,6 +1035,11 @@ if __name__ == '__main__':
             if not isAlive:
                 endClock += 1
             if not isAlive and endClock == 180:
+                for elem in enemies:
+                    elem.kill()
+                for elem in ground_layer:
+                    elem.kill()
+                ground = Ground(-300, height // 4 * 3, width, [all_sprites, ground_layer], sprite=True)
                 condition_trigger = 2
             # vertical move end
             # Main act
