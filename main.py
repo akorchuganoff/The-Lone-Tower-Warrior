@@ -167,7 +167,7 @@ def menuBoss(screen, curBoss):
         screen.blit(pygame.image.load('Data/menu/ogre.gif'), (893, 374))
         screen.blit(pygame.image.load('Data/menu/wizard(killed).gif'), (530, 378))
         screen.blit(pygame.image.load('Data/menu/summoner(killed).gif'), (150, 380))
-    if curBoss == 4:
+    if curBoss >= 4:
         screen.blit(pygame.image.load('Data/menu/ogre(killed).gif'), (893, 378))
         screen.blit(pygame.image.load('Data/menu/wizard(killed).gif'), (530, 378))
         screen.blit(pygame.image.load('Data/menu/summoner(killed).gif'), (150, 380))
@@ -800,11 +800,9 @@ if __name__ == '__main__':
     pygame.mixer.music.load('Data/sounds/menu music.mp3')
     pygame.mixer.music.play(loops=-1)
 
-    curBoss = 1
-
     print(colorkey)
     while running:
-        speedPerFrame = clock.tick(60) / 1000
+        speedPerFrame = clock.tick(fps) / 1000
         if condition_trigger == -1:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -853,6 +851,7 @@ if __name__ == '__main__':
                         ground = Ground(-700, height // 4 * 3, width, [all_sprites, ground_layer], sprite=True)
                         shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
+                        curBoss = 1
                         portal = Portal([all_sprites, portal_group])
                         # movement triggers
                         right_trigger = False
@@ -1068,6 +1067,7 @@ if __name__ == '__main__':
                 ground = Ground(ground_pos[0], ground_pos[1], width, [all_sprites, ground_layer], sprite=True)
                 condition_trigger = 2
                 collisionClock = 0
+                curBoss += 1
             # vertical move end
             # Main act
             screen.fill((0, 0, 0))
