@@ -242,8 +242,9 @@ class Player(pygame.sprite.Sprite):
                     self.image = pygame.transform.flip(self.image, True, False)
 
             elif collisionClock % 5 == 0:
-                pygame.mixer.Sound('Data/sounds/steps/stone' + str(self.step % 6 + 1) + '.mp3').play()
-                self.step += 1
+                if collisionClock % 10 == 0:
+                    pygame.mixer.Sound('Data/sounds/steps/stone' + str(self.step % 6 + 1) + '.mp3').play()
+                    self.step += 1
                 self.frames = self.frames_walk
                 self.cur_frame = (self.cur_frame + 1) % len(self.frames)
                 self.image = self.frames[self.cur_frame]
@@ -350,6 +351,7 @@ class Enemy(pygame.sprite.Sprite):
                 if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                     self.image = pygame.transform.flip(self.image, True, False)
             if self.attackClock == 4 * len(self.frames):
+                pygame.mixer.Sound('Data/sounds/hit.mp3').play()
                 self.attackClock = 0
                 self.attackTrigger = False
                 self.player.hp -= 5
@@ -498,6 +500,7 @@ class Summoner(Boss):
                 if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                     self.image = pygame.transform.flip(self.image, True, False)
             if self.attackClock == 4 * len(self.frames):
+                pygame.mixer.Sound('Data/sounds/hit.mp3').play()
                 self.attackClock = 0
                 self.attackTrigger = False
                 self.player.hp -= 30
@@ -522,6 +525,8 @@ class Ogre(Boss):
         if self.deathTrigger:
             return
         self.abilityClock += 1
+        if self.abilityClock % 90 == 0:
+            pygame.mixer.Sound('Data/sounds/ogre sound.mp3').play()
         if self.abilityClock == 270:
             self.abilityClock = 0
             self.cur_frame = -1
@@ -539,6 +544,7 @@ class Ogre(Boss):
                 if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                     self.image = pygame.transform.flip(self.image, True, False)
             if self.abilityClock == 35:
+                pygame.mixer.Sound('Data/sounds/ogre sound2.mp3').play()
                 self.vy = 0
                 self.abilityTrigger = False
                 self.cur_frame = -1
@@ -555,6 +561,7 @@ class Ogre(Boss):
                 if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                     self.image = pygame.transform.flip(self.image, True, False)
             if self.attackClock == 4 * len(self.frames):
+                pygame.mixer.Sound('Data/sounds/hit.mp3').play()
                 self.attackClock = 0
                 self.attackTrigger = False
                 self.player.hp -= 40
@@ -602,17 +609,22 @@ class Bullet(pygame.sprite.Sprite):
             target = pygame.sprite.spritecollideany(self, i)
             if pygame.sprite.spritecollideany(self, i):
                 if self.target == [player_group]:
-                    pygame.mixer.Sound('Data/sounds/explode.mp3').play()
+                    s = pygame.mixer.Sound('Data/sounds/explode.mp3')
+                    s.set_volume(0.5)
+                    s.play()
                 elif self.target == [boss_group, enemies]:
                     pygame.mixer.Sound('Data/sounds/bowhit2.mp3').play()
                 target.hp -= self.damage
                 self.kill()
-        if pygame.sprite.spritecollideany(self, ground_layer) or self.rect.y + self.rect.width < -1000 or\
-                self.rect.y > 800:
+        if pygame.sprite.spritecollideany(self, ground_layer):
             if self.target == [player_group]:
-                pygame.mixer.Sound('Data/sounds/explode.mp3').play()
+                s = pygame.mixer.Sound('Data/sounds/explode.mp3')
+                s.set_volume(0.5)
+                s.play()
             elif self.target == [boss_group, enemies]:
                 pygame.mixer.Sound('Data/sounds/bowhit.mp3').play()
+            self.kill()
+        if self.rect.y + self.rect.width < -1000 or self.rect.y > 800:
             self.kill()
 
 
@@ -700,6 +712,7 @@ def newWave(typesOfEnemies):
 
 
 if __name__ == '__main__':
+    pygame.mixer.pre_init(48000, -16, 1, 1024)
     pygame.mixer.init()
     pygame.init()
     size = width, height = 1200, 800
@@ -725,6 +738,10 @@ if __name__ == '__main__':
     screen.blit(pygame.image.load('Data/the_best_logo_you_ever_seen/name/0.gif'), (300, 200))
     pygame.draw.rect(screen, (0, 0, 0), ((200, 600), (800, 30)), 1)
     fps = 60
+
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.load('Data/sounds/menu music.mp3')
+    pygame.mixer.music.play(loops=-1)
 
     while running:
         speedPerFrame = clock.tick(fps) / 1000
@@ -785,6 +802,9 @@ if __name__ == '__main__':
                         jump_trigger = False
                         shop_trigger = False
                         last_move = 'right'
+                        pygame.mixer.music.set_volume(0.1)
+                        pygame.mixer.music.load('Data/sounds/castle music.mp3')
+                        pygame.mixer.music.play(loops=-1)
                     elif continue_pos[0] <= x <= continue_pos[2] and continue_pos[1] <= y <= continue_pos[3]:
                         print('continue')
                     elif exit_pos[0] <= x <= exit_pos[2] and exit_pos[1] <= y <= exit_pos[3]:
@@ -810,7 +830,9 @@ if __name__ == '__main__':
 
                         # vertical move
                         elif event.key == pygame.K_UP:
-                            pygame.mixer.Sound('Data/sounds/bow_jump.mp3').play()
+                            s = pygame.mixer.Sound('Data/sounds/bow_jump.mp3')
+                            s.set_volume(0.5)
+                            s.play()
                             jump_trigger = True
                         # vertical move end
                         elif event.key == pygame.K_q:
@@ -831,6 +853,9 @@ if __name__ == '__main__':
                                 event.pos[1] < portal.rect.y + portal.rect.height:
                             # Я знаю что это отвратительно и бессовестно, но что поделать
                             if False:
+                                pygame.mixer.music.set_volume(0.1)
+                                pygame.mixer.music.load('Data/sounds/wizard music.mp3')
+                                pygame.mixer.music.play(loops=-1)
                                 name = 'Wizard'
                                 boss = FireBoss(width - 200, height // 8 * 4, player,
                                                 [all_boss_sprites, boss_group], all_boss_sprites,
@@ -843,6 +868,9 @@ if __name__ == '__main__':
                                 ground.kill()
                                 continue
                             if False:
+                                pygame.mixer.music.set_volume(0.2)
+                                pygame.mixer.music.load('Data/sounds/ogre music.mp3')
+                                pygame.mixer.music.play(loops=-1)
                                 name = 'Ogre'
                                 boss = Ogre(width - 200, height // 8 * 4, player,
                                                 [all_boss_sprites, boss_group], all_boss_sprites,
@@ -856,6 +884,9 @@ if __name__ == '__main__':
                                 ground.kill()
                                 continue
                             if True:
+                                pygame.mixer.music.set_volume(0.2)
+                                pygame.mixer.music.load('Data/sounds/summoner music.mp3')
+                                pygame.mixer.music.play(loops=-1)
                                 name = 'Summoner'
                                 boss = Summoner(width - 200, height // 8 * 4, player,
                                             [all_boss_sprites, boss_group], all_boss_sprites,
@@ -973,7 +1004,9 @@ if __name__ == '__main__':
                     # horizontal move end
                     # vertical move
                     elif event.key == pygame.K_UP:
-                        pygame.mixer.Sound('Data/sounds/bow_jump.mp3').play()
+                        s = pygame.mixer.Sound('Data/sounds/bow_jump.mp3')
+                        s.set_volume(0.5)
+                        s.play()
                         jump_trigger = True
                     # vertical move end
                     elif event.key == pygame.K_z:
