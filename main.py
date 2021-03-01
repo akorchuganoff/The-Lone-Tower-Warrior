@@ -339,8 +339,8 @@ class VerticalBorder(pygame.sprite.Sprite):
             self.image = border_sprite
             self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
         else:
-            self.image = pygame.Surface([5, height])
-            self.rect = pygame.Rect(x, y, 5, height)
+            self.image = pygame.Surface([40, height])
+            self.rect = pygame.Rect(x, y, 40, height)
             self.image.fill((255, 255, 255))
             self.image.set_alpha(0)
 
@@ -443,7 +443,7 @@ class Boss(Enemy):
     def draw_boss_name(self):
         screen.blit(self.fon, (-100, 0))
         font = pygame.font.Font(None, 50)
-        text = font.render(self.name, True, (200, 200, 200))
+        text = font.render(self.name, True, (32, 28, 43))
         text_x = width // 2 - text.get_width() // 2
         text_y = height // 8 - text.get_height() // 2
         text_w = text.get_width()
@@ -727,7 +727,7 @@ class Money(pygame.sprite.Sprite):
 
     def update(self):
         font = pygame.font.Font(None, 30)
-        text = font.render(f"Your balance: {self.amount}", True, (200, 200, 200))
+        text = font.render(f"Your balance: {self.amount}", True, (32, 28, 43))
         text_x = 50
         text_y = 50
         text_w = text.get_width()
@@ -782,7 +782,7 @@ if __name__ == '__main__':
     horizontall_speed = 200
     vertical_speed = 500
     typesOfEnemies = ['goblin', 'giant']
-    condition_trigger = 0
+    condition_trigger = -1
     collisionClock = 0
     time = 0
     camera = Camera()
@@ -804,7 +804,7 @@ if __name__ == '__main__':
 
     print(colorkey)
     while running:
-        speedPerFrame = clock.tick(fps) / 1000
+        speedPerFrame = clock.tick(60) / 1000
         if condition_trigger == -1:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -827,7 +827,6 @@ if __name__ == '__main__':
                     if start_pos[0] <= x <= start_pos[2] and start_pos[1] <= y <= start_pos[3]:
                         print('start')
                         collisionClock = 0
-                        time = 1
                         condition_trigger = 2
                         # start game
                         all_sprites = pygame.sprite.Group()
@@ -878,11 +877,9 @@ if __name__ == '__main__':
                     if event.type == pygame.KEYDOWN:
                         # horizontal move begin
                         if event.key == pygame.K_RIGHT:
-                            last_move = 'right'
                             right_trigger = True
                             left_trigger = False
                         elif event.key == pygame.K_LEFT:
-                            last_move = 'left'
                             right_trigger = False
                             left_trigger = True
                         # horizontal move end
@@ -922,8 +919,10 @@ if __name__ == '__main__':
                 # horizontal move begin
                 if left_trigger:
                     player.vx = -1 * horizontall_speed * speedPerFrame
+                    last_move = 'left'
                 elif right_trigger:
                     player.vx = horizontall_speed * speedPerFrame
+                    last_move = 'right'
                 else:
                     player.vx = 0
                 # horizontal move end
@@ -1123,6 +1122,8 @@ if __name__ == '__main__':
                         boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
                         f2 = True
                     if f2:
+                        leftBD = VerticalBorder(0, 800, 400, player, [all_boss_sprites], sprite=False)
+                        rightBD = VerticalBorder(1160, 800, 400, player, [all_boss_sprites], sprite=False)
                         condition_trigger = 4
                         f1 = False
                         collisionClock = 0
