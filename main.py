@@ -749,8 +749,6 @@ if __name__ == '__main__':
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-            condition_trigger = 0
-            fps = 30
             i += 1
             if i == 600:
                 fps = 30
@@ -867,7 +865,7 @@ if __name__ == '__main__':
                                 collisionClock = 0
                                 ground.kill()
                                 continue
-                            if False:
+                            if True:
                                 pygame.mixer.music.set_volume(0.2)
                                 pygame.mixer.music.load('Data/sounds/ogre music.mp3')
                                 pygame.mixer.music.play(loops=-1)
