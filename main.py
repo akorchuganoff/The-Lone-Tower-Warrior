@@ -4,7 +4,6 @@ import random
 import math
 
 from dead_screen import deadScreen
-from shop_screen import shopScreen
 from PortalClass import Portal
 
 # TODO:
@@ -886,7 +885,6 @@ if __name__ == '__main__':
                         all_sprites = pygame.sprite.Group()
                         all_boss_sprites = pygame.sprite.Group()
                         boss_group = pygame.sprite.Group()
-                        shop_group = pygame.sprite.Group()
                         maintowergroup = pygame.sprite.Group()
                         player_group = pygame.sprite.Group()
                         ground_layer = pygame.sprite.Group()
@@ -905,7 +903,6 @@ if __name__ == '__main__':
                         rightBD = VerticalBorder(1200, 100, 400, player, [all_sprites], sprite=True)
 
                         ground = Ground(-700, height // 4 * 3, width, [all_sprites, ground_layer], sprite=True)
-                        shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
                         curBoss = 1
                         portal = Portal([all_sprites, portal_group])
@@ -1028,6 +1025,7 @@ if __name__ == '__main__':
                         camera.apply(sprite)
 
             else:
+                # shop
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
@@ -1035,18 +1033,19 @@ if __name__ == '__main__':
                         if event.key == pygame.K_q:
                             shop_trigger = False
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        x, y = event.pos
-                        xr, yr, xl, yl = shop.update()
-                        print(x, y)
-                        print(xr, yr, xl, yl)
-                        if xr <= x - width // 8 <= xl and yr <= y - height // 8 <= yl:
-                            if shop.money.amount >= shop.price:
-                                shop.buy(mainTower)
-                                print('buy')
-                            else:
-                                pass
-                shop_group.draw(screen)
-                shop_group.update()
+                        pos = event.pos
+                        if pos[0] in range(100, 250 + 75) and pos[1] in range(100, 250 + 100):
+                            print(1)
+                        elif pos[0] in range(475, 250 + 475) and pos[1] in range(100, 250 + 100):
+                            print(2)
+                        elif pos[0] in range(850, 250 + 850) and pos[1] in range(100, 250 + 100):
+                            print(3)
+                        elif pos[0] in range(100, 250 + 75) and pos[1] in range(475, 250 + 475):
+                            print(4)
+                        elif pos[0] in range(475, 250 + 475) and pos[1] in range(475, 250 + 475):
+                            print(5)
+                        elif pos[0] in range(850, 250 + 850) and pos[1] in range(475, 250 + 475):
+                            print(6)
                 shopScreen1(screen)
 
         elif condition_trigger == 3:
