@@ -189,6 +189,7 @@ class Player(pygame.sprite.Sprite):
         self.PlayerHPbar = HPbar(self, self.frames_idle[0].get_width(), 10, [all_sprites, tools, all_boss_sprites])
         self.width = self.frames_idle[0].get_width()
         self.height = self.frames_idle[0].get_height()
+        self.step = 0
 
     def hit(self, pos, coords=(), group=False):
         global last_move
@@ -218,13 +219,19 @@ class Player(pygame.sprite.Sprite):
             if self.attackClock == len(self.frames) * 3:
                 self.attackTrigger = False
                 if self.archeryTrigger:
+                    pygame.mixer.Sound('Data/sounds/bow_jump.mp3').play()
                     self.archery(*self.archery_coords, self.archery_group)
                     self.archeryTrigger = False
                     return
+                fsoundhit = False
                 for enemy in pygame.sprite.spritecollide(self, enemies, False):
                     enemy.hp -= 10
+                    fsoundhit = True
                 for enemy in pygame.sprite.spritecollide(self, boss_group, False):
                     enemy.hp -= 10
+                    fsoundhit = True
+                if fsoundhit:
+                    pygame.mixer.Sound('Data/sounds/hit.mp3').play()
             return
         if pygame.sprite.spritecollideany(self, ground_layer):
             self.isGrounded = True
@@ -235,6 +242,8 @@ class Player(pygame.sprite.Sprite):
                     self.image = pygame.transform.flip(self.image, True, False)
 
             elif collisionClock % 5 == 0:
+                pygame.mixer.Sound('Data/sounds/steps/stone' + str(self.step % 6 + 1) + '.mp3').play()
+                self.step += 1
                 self.frames = self.frames_walk
                 self.cur_frame = (self.cur_frame + 1) % len(self.frames)
                 self.image = self.frames[self.cur_frame]
@@ -461,6 +470,7 @@ class Summoner(Boss):
             return
         self.abilityClock += 1
         if self.abilityClock == 118:
+            pygame.mixer.Sound('Data/sounds/summoner sound.mp3').play()
             self.abilityClock = 0
             self.abilityTrigger = True
         if self.abilityTrigger:
@@ -591,10 +601,18 @@ class Bullet(pygame.sprite.Sprite):
                 continue
             target = pygame.sprite.spritecollideany(self, i)
             if pygame.sprite.spritecollideany(self, i):
+                if self.target == [player_group]:
+                    pygame.mixer.Sound('Data/sounds/explode.mp3').play()
+                elif self.target == [boss_group, enemies]:
+                    pygame.mixer.Sound('Data/sounds/bowhit2.mp3').play()
                 target.hp -= self.damage
                 self.kill()
         if pygame.sprite.spritecollideany(self, ground_layer) or self.rect.y + self.rect.width < -1000 or\
                 self.rect.y > 800:
+            if self.target == [player_group]:
+                pygame.mixer.Sound('Data/sounds/explode.mp3').play()
+            elif self.target == [boss_group, enemies]:
+                pygame.mixer.Sound('Data/sounds/bowhit.mp3').play()
             self.kill()
 
 
@@ -682,6 +700,7 @@ def newWave(typesOfEnemies):
 
 
 if __name__ == '__main__':
+    pygame.mixer.init()
     pygame.init()
     size = width, height = 1200, 800
     screen = pygame.display.set_mode(size)
@@ -791,6 +810,7 @@ if __name__ == '__main__':
 
                         # vertical move
                         elif event.key == pygame.K_UP:
+                            pygame.mixer.Sound('Data/sounds/bow_jump.mp3').play()
                             jump_trigger = True
                         # vertical move end
                         elif event.key == pygame.K_q:
@@ -953,6 +973,7 @@ if __name__ == '__main__':
                     # horizontal move end
                     # vertical move
                     elif event.key == pygame.K_UP:
+                        pygame.mixer.Sound('Data/sounds/bow_jump.mp3').play()
                         jump_trigger = True
                     # vertical move end
                     elif event.key == pygame.K_z:
