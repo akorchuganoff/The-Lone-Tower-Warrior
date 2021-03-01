@@ -732,7 +732,7 @@ if __name__ == '__main__':
     horizontall_speed = 200
     vertical_speed = 500
     typesOfEnemies = ['goblin', 'giant']
-    condition_trigger = 0
+    condition_trigger = -1
     collisionClock = 0
     time = 0
     camera = Camera()
@@ -872,7 +872,7 @@ if __name__ == '__main__':
                                 collisionClock = 0
                                 ground.kill()
                                 continue
-                            if True:
+                            if False:
                                 pygame.mixer.music.set_volume(0.2)
                                 pygame.mixer.music.load('Data/sounds/ogre music.mp3')
                                 pygame.mixer.music.play(loops=-1)
