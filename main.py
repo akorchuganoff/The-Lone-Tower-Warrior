@@ -756,7 +756,7 @@ if __name__ == '__main__':
                                 event.pos[1] > portal.rect.y and\
                                 event.pos[1] < portal.rect.y + portal.rect.height:
                             # Я знаю что это отвратительно и бессовестно, но что поделать
-                            if False:
+                            if True:
                                 name = 'Wizard'
                                 boss = FireBoss(width - 200, height // 8 * 4, player,
                                                 [all_boss_sprites, boss_group], all_boss_sprites,
