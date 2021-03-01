@@ -105,8 +105,30 @@ ogre_boss_walk = [pygame.image.load('Data/ogr boss/walk/1.png'), pygame.image.lo
                    pygame.image.load('Data/ogr boss/walk/5.png'), pygame.image.load('Data/ogr boss/walk/6.png'),
                    pygame.image.load('Data/ogr boss/walk/7.png')]
 
-ground_sprite = pygame.image.load('Data/env/ground.png')
+summoner_boss_idle = [pygame.image.load('Data/summoner boss/idle.png')]
 
+summoner_boss_attack = [pygame.image.load('Data/summoner boss/attack/1.png'),
+                    pygame.image.load('Data/summoner boss/attack/2.png'),
+                    pygame.image.load('Data/summoner boss/attack/3.png'),
+                    pygame.image.load('Data/summoner boss/attack/4.png'),
+                    pygame.image.load('Data/summoner boss/attack/5.png'),
+                    pygame.image.load('Data/summoner boss/attack/6.png'),
+                    pygame.image.load('Data/summoner boss/attack/7.png')]
+
+summoner_boss_death = [pygame.image.load('Data/summoner boss/death/1.png'),
+                    pygame.image.load('Data/summoner boss/death/2.png'),
+                    pygame.image.load('Data/summoner boss/death/3.png'),
+                    pygame.image.load('Data/summoner boss/death/4.png'),
+                    pygame.image.load('Data/summoner boss/death/5.png'),
+                    pygame.image.load('Data/summoner boss/death/6.png'),
+                    pygame.image.load('Data/summoner boss/death/7.png')]
+
+summoner_boss_walk = [pygame.image.load('Data/summoner boss/walk/1.png'), pygame.image.load('Data/summoner boss/walk/2.png'),
+                   pygame.image.load('Data/summoner boss/walk/3.png'), pygame.image.load('Data/summoner boss/walk/4.png'),
+                   pygame.image.load('Data/summoner boss/walk/5.png'), pygame.image.load('Data/summoner boss/walk/6.png'),
+                   pygame.image.load('Data/summoner boss/walk/7.png')]
+
+ground_sprite = pygame.image.load('Data/env/ground.png')
 
 
 def logo(screen, width, height):
@@ -169,6 +191,7 @@ class Player(pygame.sprite.Sprite):
         self.PlayerHPbar = HPbar(self, self.frames_idle[0].get_width(), 10, [all_sprites, tools, all_boss_sprites])
         self.width = self.frames_idle[0].get_width()
         self.height = self.frames_idle[0].get_height()
+        self.step = 0
 
     def hit(self, pos, coords=(), group=False):
         global last_move
@@ -198,13 +221,19 @@ class Player(pygame.sprite.Sprite):
             if self.attackClock == len(self.frames) * 3:
                 self.attackTrigger = False
                 if self.archeryTrigger:
+                    pygame.mixer.Sound('Data/sounds/bow_jump.mp3').play()
                     self.archery(*self.archery_coords, self.archery_group)
                     self.archeryTrigger = False
                     return
+                fsoundhit = False
                 for enemy in pygame.sprite.spritecollide(self, enemies, False):
                     enemy.hp -= 10
+                    fsoundhit = True
                 for enemy in pygame.sprite.spritecollide(self, boss_group, False):
                     enemy.hp -= 10
+                    fsoundhit = True
+                if fsoundhit:
+                    pygame.mixer.Sound('Data/sounds/hit.mp3').play()
             return
         if pygame.sprite.spritecollideany(self, ground_layer):
             self.isGrounded = True
@@ -215,6 +244,9 @@ class Player(pygame.sprite.Sprite):
                     self.image = pygame.transform.flip(self.image, True, False)
 
             elif collisionClock % 5 == 0:
+                if collisionClock % 10 == 0:
+                    pygame.mixer.Sound('Data/sounds/steps/stone' + str(self.step % 6 + 1) + '.mp3').play()
+                    self.step += 1
                 self.frames = self.frames_walk
                 self.cur_frame = (self.cur_frame + 1) % len(self.frames)
                 self.image = self.frames[self.cur_frame]
@@ -319,6 +351,7 @@ class Enemy(pygame.sprite.Sprite):
                 if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                     self.image = pygame.transform.flip(self.image, True, False)
             if self.attackClock == 4 * len(self.frames):
+                pygame.mixer.Sound('Data/sounds/hit.mp3').play()
                 self.attackClock = 0
                 self.attackTrigger = False
                 self.player.hp -= 5
@@ -393,11 +426,6 @@ class Boss(Enemy):
         else:
             self.attackTrigger = False
 
-    def walk(self):
-        self.cur_frame = -1
-        self.frames = self.frames_walk
-
-
 class FireBoss(Boss):
     def update(self):
         super().update()
@@ -440,17 +468,55 @@ class FireBoss(Boss):
 class Summoner(Boss):
     def update(self):
         super().update()
-        if collisionClock % 75 == 59:
-            enemy = Enemy(self.rect.x, self.rect.y, boss_ground.rect.y - 100, player, [all_sprites, enemies],
-                          all_sprites, tools, hp=10, attack=easy_enemy_attack,
-                          walk=easy_enemy_walk, idle=easy_enemy_idle)
-        if collisionClock % 5 == 0:
-            if pygame.sprite.spritecollideany(self, player_group):
-                player.hp -= 1
-        if self.player.rect.x + self.player.width // 2 > self.rect.x + self.rect.width // 2:
-            self.rect.x += 40 * speedPerFrame
-        elif self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
-            self.rect.x -= 10 * speedPerFrame
+        if self.deathTrigger:
+            return
+        self.abilityClock += 1
+        if self.abilityClock == 118:
+            pygame.mixer.Sound('Data/sounds/summoner sound.mp3').play()
+            self.abilityClock = 0
+            self.abilityTrigger = True
+        if self.abilityTrigger:
+            self.frames = self.frames_attack
+            if self.abilityClock % 4 == 3:
+                self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+                self.image = self.frames[self.cur_frame]
+                self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height() + self.vy
+                if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                    self.image = pygame.transform.flip(self.image, True, False)
+            if self.abilityClock == 28:
+                enemy = Enemy(self.rect.x, boss_ground.rect.y - 100, player, [all_boss_sprites, enemies],
+                              all_boss_sprites, tools, hp=10, attack=easy_enemy_attack,
+                              walk=easy_enemy_walk, idle=easy_enemy_idle)
+                self.abilityTrigger = False
+                self.cur_frame = -1
+            return
+        if self.attackTrigger:
+            self.attackClock += 1
+            self.frames = self.frames_attack
+            if collisionClock % 4 == 3:
+                self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+                self.image = self.frames[self.cur_frame]
+                self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height()
+                if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                    self.image = pygame.transform.flip(self.image, True, False)
+            if self.attackClock == 4 * len(self.frames):
+                pygame.mixer.Sound('Data/sounds/hit.mp3').play()
+                self.attackClock = 0
+                self.attackTrigger = False
+                self.player.hp -= 30
+                self.cur_frame = -1
+            return
+        if collisionClock % 4 == 3:
+            self.frames = self.frames_walk
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+            self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height()
+            if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                self.image = pygame.transform.flip(self.image, True, False)
+            if self.player.rect.x + self.player.width // 2 > self.rect.x + self.rect.width // 2:
+                self.rect.x += 280 * speedPerFrame
+            elif self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                self.rect.x -= 250 * speedPerFrame
 
 
 class Ogre(Boss):
@@ -459,6 +525,8 @@ class Ogre(Boss):
         if self.deathTrigger:
             return
         self.abilityClock += 1
+        if self.abilityClock % 90 == 0:
+            pygame.mixer.Sound('Data/sounds/ogre sound.mp3').play()
         if self.abilityClock == 270:
             self.abilityClock = 0
             self.cur_frame = -1
@@ -473,9 +541,10 @@ class Ogre(Boss):
                 self.cur_frame = (self.cur_frame + 1) % len(self.frames)
                 self.image = self.frames[self.cur_frame]
                 self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height() + self.vy
-                if width // 2 < self.rect.x + self.rect.width // 2:
+                if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                     self.image = pygame.transform.flip(self.image, True, False)
             if self.abilityClock == 35:
+                pygame.mixer.Sound('Data/sounds/ogre sound2.mp3').play()
                 self.vy = 0
                 self.abilityTrigger = False
                 self.cur_frame = -1
@@ -492,9 +561,10 @@ class Ogre(Boss):
                 if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                     self.image = pygame.transform.flip(self.image, True, False)
             if self.attackClock == 4 * len(self.frames):
+                pygame.mixer.Sound('Data/sounds/hit.mp3').play()
                 self.attackClock = 0
                 self.attackTrigger = False
-                self.player.hp -= 30
+                self.player.hp -= 40
                 self.cur_frame = -1
             return
         if collisionClock % 4 == 3:
@@ -538,10 +608,23 @@ class Bullet(pygame.sprite.Sprite):
                 continue
             target = pygame.sprite.spritecollideany(self, i)
             if pygame.sprite.spritecollideany(self, i):
+                if self.target == [player_group]:
+                    s = pygame.mixer.Sound('Data/sounds/explode.mp3')
+                    s.set_volume(0.5)
+                    s.play()
+                elif self.target == [boss_group, enemies]:
+                    pygame.mixer.Sound('Data/sounds/bowhit2.mp3').play()
                 target.hp -= self.damage
                 self.kill()
-        if pygame.sprite.spritecollideany(self, ground_layer) or self.rect.y + self.rect.width < -1000 or\
-                self.rect.y > 800:
+        if pygame.sprite.spritecollideany(self, ground_layer):
+            if self.target == [player_group]:
+                s = pygame.mixer.Sound('Data/sounds/explode.mp3')
+                s.set_volume(0.5)
+                s.play()
+            elif self.target == [boss_group, enemies]:
+                pygame.mixer.Sound('Data/sounds/bowhit.mp3').play()
+            self.kill()
+        if self.rect.y + self.rect.width < -1000 or self.rect.y > 800:
             self.kill()
 
 
@@ -629,6 +712,8 @@ def newWave(typesOfEnemies):
 
 
 if __name__ == '__main__':
+    pygame.mixer.pre_init(48000, -16, 1, 1024)
+    pygame.mixer.init()
     pygame.init()
     size = width, height = 1200, 800
     screen = pygame.display.set_mode(size)
@@ -654,14 +739,16 @@ if __name__ == '__main__':
     pygame.draw.rect(screen, (0, 0, 0), ((200, 600), (800, 30)), 1)
     fps = 60
 
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.load('Data/sounds/menu music.mp3')
+    pygame.mixer.music.play(loops=-1)
+
     while running:
         speedPerFrame = clock.tick(fps) / 1000
         if condition_trigger == -1:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-            condition_trigger = 0
-            fps = 30
             i += 1
             if i == 600:
                 fps = 30
@@ -713,6 +800,9 @@ if __name__ == '__main__':
                         jump_trigger = False
                         shop_trigger = False
                         last_move = 'right'
+                        pygame.mixer.music.set_volume(0.1)
+                        pygame.mixer.music.load('Data/sounds/castle music.mp3')
+                        pygame.mixer.music.play(loops=-1)
                     elif continue_pos[0] <= x <= continue_pos[2] and continue_pos[1] <= y <= continue_pos[3]:
                         print('continue')
                     elif exit_pos[0] <= x <= exit_pos[2] and exit_pos[1] <= y <= exit_pos[3]:
@@ -738,6 +828,9 @@ if __name__ == '__main__':
 
                         # vertical move
                         elif event.key == pygame.K_UP:
+                            s = pygame.mixer.Sound('Data/sounds/bow_jump.mp3')
+                            s.set_volume(0.5)
+                            s.play()
                             jump_trigger = True
                         # vertical move end
                         elif event.key == pygame.K_q:
@@ -757,7 +850,10 @@ if __name__ == '__main__':
                                 event.pos[1] > portal.rect.y and\
                                 event.pos[1] < portal.rect.y + portal.rect.height:
                             # Я знаю что это отвратительно и бессовестно, но что поделать
-                            if True:
+                            if False:
+                                pygame.mixer.music.set_volume(0.1)
+                                pygame.mixer.music.load('Data/sounds/wizard music.mp3')
+                                pygame.mixer.music.play(loops=-1)
                                 name = 'Wizard'
                                 boss = FireBoss(width - 200, height // 8 * 4, player,
                                                 [all_boss_sprites, boss_group], all_boss_sprites,
@@ -769,18 +865,38 @@ if __name__ == '__main__':
                                 collisionClock = 0
                                 ground.kill()
                                 continue
-                            name = 'Ogre'
-                            boss = Ogre(width - 200, height // 8 * 4, player,
+                            if True:
+                                pygame.mixer.music.set_volume(0.2)
+                                pygame.mixer.music.load('Data/sounds/ogre music.mp3')
+                                pygame.mixer.music.play(loops=-1)
+                                name = 'Ogre'
+                                boss = Ogre(width - 200, height // 8 * 4, player,
+                                                [all_boss_sprites, boss_group], all_boss_sprites,
+                                                tools, name, 500, pygame.image.load('Data/fon3.png'),
+                                                attack=ogre_boss_attack, walk=ogre_boss_walk,
+                                                idle=ogre_boss_idle, death=ogre_boss_death)
+                                boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
+                                condition_trigger = 4
+                                f1 = False
+                                collisionClock = 0
+                                ground.kill()
+                                continue
+                            if True:
+                                pygame.mixer.music.set_volume(0.2)
+                                pygame.mixer.music.load('Data/sounds/summoner music.mp3')
+                                pygame.mixer.music.play(loops=-1)
+                                name = 'Summoner'
+                                boss = Summoner(width - 200, height // 8 * 4, player,
                                             [all_boss_sprites, boss_group], all_boss_sprites,
-                                            tools, name, 300, pygame.image.load('Data/fon3.png'),
-                                            attack=ogre_boss_attack, walk=ogre_boss_walk,
-                                            idle=ogre_boss_idle, death=ogre_boss_death)
-                            boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
-                            condition_trigger = 4
-                            f1 = False
-                            collisionClock = 0
-                            ground.kill()
-                            continue
+                                            tools, name, 300, pygame.image.load('Data/fon2.jpg'),
+                                            attack=summoner_boss_attack, walk=summoner_boss_walk,
+                                            idle=summoner_boss_idle, death=summoner_boss_death)
+                                boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
+                                condition_trigger = 4
+                                f1 = False
+                                collisionClock = 0
+                                ground.rect.y = height // 8 * 7
+                                continue
                             # Конец этого ужаса
                         elif event.button == 1 and not player.attackTrigger:
                             player.hit(event.pos)
@@ -886,6 +1002,9 @@ if __name__ == '__main__':
                     # horizontal move end
                     # vertical move
                     elif event.key == pygame.K_UP:
+                        s = pygame.mixer.Sound('Data/sounds/bow_jump.mp3')
+                        s.set_volume(0.5)
+                        s.play()
                         jump_trigger = True
                     # vertical move end
                     elif event.key == pygame.K_z:
