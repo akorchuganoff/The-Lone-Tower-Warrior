@@ -930,6 +930,9 @@ if __name__ == '__main__':
                             x2, y2 = player.rect.x + player.width // 2, player.rect.y + player.height // 2
                             player.hit(event.pos, coords=(x1, y1, x2, y2), group=all_sprites)
                 if player.hp <= 0 or mainTower.hp <= 0:
+                    pygame.mixer.music.set_volume(0.5)
+                    pygame.mixer.music.load('Data/sounds/menu music.mp3')
+                    pygame.mixer.music.play(loops=-1)
                     condition_trigger = 3
 
                 # horizontal move begin
@@ -1067,6 +1070,9 @@ if __name__ == '__main__':
                         player.hit(event.pos, coords=(x1, y1, x2, y2), group=all_boss_sprites)
 
             if player.hp <= 0 or mainTower.hp <= 0:
+                pygame.mixer.music.set_volume(0.5)
+                pygame.mixer.music.load('Data/sounds/menu music.mp3')
+                pygame.mixer.music.play(loops=-1)
                 condition_trigger = 3
             # horizontal move begin
             if left_trigger:
