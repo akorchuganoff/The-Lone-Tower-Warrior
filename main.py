@@ -152,6 +152,26 @@ def menuScreen(screen, width, height, colorkey):
     return start_pos, continue_pos, exit_pos
 
 
+def menuBoss(screen, curBoss):
+    screen.blit(pygame.image.load('Data/menu/boss menu.png'),(0, 0))
+    for i in range(3 - curBoss):
+        screen.blit(pygame.image.load('Data/menu/locked1.png'), (200 + 350 * (2 - i), 340))
+        screen.blit(pygame.image.load('Data/menu/locked.gif'), (185 + 350 * (2 - i), 260))
+    if curBoss == 1:
+        screen.blit(pygame.image.load('Data/menu/summoner.gif'), (150, 380))
+    if curBoss == 2:
+        screen.blit(pygame.image.load('Data/menu/wizard.gif'), (530, 378))
+        screen.blit(pygame.image.load('Data/menu/summoner(killed).gif'), (150, 380))
+    if curBoss == 3:
+        screen.blit(pygame.image.load('Data/menu/ogre.gif'), (893, 374))
+        screen.blit(pygame.image.load('Data/menu/wizard(killed).gif'), (530, 378))
+        screen.blit(pygame.image.load('Data/menu/summoner(killed).gif'), (150, 380))
+    if curBoss == 4:
+        screen.blit(pygame.image.load('Data/menu/ogre(killed).gif'), (893, 378))
+        screen.blit(pygame.image.load('Data/menu/wizard(killed).gif'), (530, 378))
+        screen.blit(pygame.image.load('Data/menu/summoner(killed).gif'), (150, 380))
+
+
 class MainTower(pygame.sprite.Sprite):
     def __init__(self, x, y, hp, group, all_sprites, tools):
         super().__init__(*group)
@@ -732,7 +752,7 @@ if __name__ == '__main__':
     horizontall_speed = 200
     vertical_speed = 500
     typesOfEnemies = ['goblin', 'giant']
-    condition_trigger = -1
+    condition_trigger = 0
     collisionClock = 0
     time = 0
     camera = Camera()
@@ -750,6 +770,9 @@ if __name__ == '__main__':
     pygame.mixer.music.load('Data/sounds/menu music.mp3')
     pygame.mixer.music.play(loops=-1)
 
+    curBoss = 2
+
+    print(colorkey)
     while running:
         speedPerFrame = clock.tick(fps) / 1000
         if condition_trigger == -1:
@@ -815,6 +838,7 @@ if __name__ == '__main__':
                     elif exit_pos[0] <= x <= exit_pos[2] and exit_pos[1] <= y <= exit_pos[3]:
                         running = False
             menuScreen(screen, width, height, colorkey)
+            menuBoss(screen , curBoss)
 
         elif condition_trigger == 2:
             if not shop_trigger:
