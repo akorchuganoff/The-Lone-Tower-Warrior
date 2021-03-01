@@ -728,7 +728,7 @@ class Money(pygame.sprite.Sprite):
     def update(self):
         font = pygame.font.Font(None, 30)
         text = font.render(f"Your balance: {self.amount}", True, (32, 28, 43))
-        text_x = 50
+        text_x = 100
         text_y = 50
         text_w = text.get_width()
         text_h = text.get_height()
@@ -776,6 +776,7 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
     image2 = pygame.image.load('Data/fon.png')
+    pause = pygame.image.load('Data/pause.png')
     # const
     running = True
     player_position = [width // 2, height // 2]
@@ -946,6 +947,7 @@ if __name__ == '__main__':
                 # Main act
                 screen.fill((0, 0, 0))
                 screen.blit(image2, (-350, -125))
+                screen.blit(pause, (10, 10))
                 all_sprites.draw(screen)
                 all_sprites.update()
 
@@ -996,6 +998,10 @@ if __name__ == '__main__':
             if not f1:
                 player.rect.y -= 200
                 f1 = True
+            if player.rect.x < 0:
+                player.rect.x = 0
+            if player.rect.x > 1150:
+                player.rect.x = 1150
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
