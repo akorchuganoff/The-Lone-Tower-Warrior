@@ -128,6 +128,8 @@ summoner_boss_walk = [pygame.image.load('Data/summoner boss/walk/1.png'), pygame
                    pygame.image.load('Data/summoner boss/walk/5.png'), pygame.image.load('Data/summoner boss/walk/6.png'),
                    pygame.image.load('Data/summoner boss/walk/7.png')]
 
+ground_sprite = pygame.image.load('Data/env/ground.png')
+
 
 def logo(screen, width, height):
     if i > 222:
@@ -294,10 +296,8 @@ class Player(pygame.sprite.Sprite):
 class Ground(pygame.sprite.Sprite):
     def __init__(self, x, y, width, group):
         super().__init__(*group)
-        self.image = pygame.Surface([width, 5])
-        self.image.fill((255, 255, 255))
-        self.image.set_alpha(0)
-        self.rect = pygame.Rect(x, y, width, 5)
+        self.image = ground_sprite
+        self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
 
     def update(self):
         pass
