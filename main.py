@@ -6,8 +6,6 @@ import math
 from dead_screen import deadScreen
 from PortalClass import Portal
 
-# TODO:
-
 player_walk = [pygame.image.load('Data/main hero/run/' +
                                  str(i + 1) + '.png') for i in range(5)]
 
