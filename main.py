@@ -185,6 +185,8 @@ def shopScreen1(screen):
     screen.blit(pygame.image.load('Data/shop/potion.png'), (475 + 48, 130 + 375))
     screen.blit(pygame.image.load('Data/shop/bow.png'), (125 + 375 * 2, 125 + 375))
 
+    screen.blit(pygame.image.load('Data/shop/attack.gif'), (159, 69))
+
 
 
 class MainTower(pygame.sprite.Sprite):
