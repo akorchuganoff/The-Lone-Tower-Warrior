@@ -144,9 +144,12 @@ def logo(screen, width, height):
                      ((201, 601), ((800 * i / (303 + 222 + 1) - 2), 30 - 2)), width=0)
 
 
-def menuScreen(screen, width, height, colorkey):
+def menuScreen(screen, width, height, colorkey, cont=False):
     screen.fill(colorkey)
-    screen.blit(pygame.image.load('Data/menu/no continue2.gif'), (300, 100))
+    if not cont:
+        screen.blit(pygame.image.load('Data/menu/no continue2.gif'), (300, 100))
+    else:
+        screen.blit(pygame.image.load('Data/menu/continue.gif'), (300, 100))
     screen.blit(pygame.image.load('Data/menu/new game.gif'), (300, 250))
     screen.blit(pygame.image.load('Data/menu/exit.gif'), (300, 400))
     start_pos, continue_pos, exit_pos = (500, 300, 700, 380), (500, 160, 700, 240), (500, 470, 700, 540)
@@ -755,7 +758,7 @@ class Camera:
 def newWave(typesOfEnemies):
     global waves
     waves += 1
-    for i in range(waves):
+    for i in range(min(waves, 5)):
         enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
         x = random.randrange(ground.rect.x, ground.rect.x + ground.rect.width - 50, 1)
         if enemy == 'goblin':
@@ -786,6 +789,7 @@ if __name__ == '__main__':
     condition_trigger = -1
     collisionClock = 0
     time = 0
+    fcont = False
     camera = Camera()
     # New logo
     i = 0
@@ -822,9 +826,8 @@ if __name__ == '__main__':
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = event.pos
-                    start_pos, continue_pos, exit_pos = menuScreen(screen, width, height, colorkey)
+                    start_pos, continue_pos, exit_pos = menuScreen(screen, width, height, colorkey, cont=fcont)
                     if start_pos[0] <= x <= start_pos[2] and start_pos[1] <= y <= start_pos[3]:
-                        print('start')
                         collisionClock = 0
                         condition_trigger = 2
                         # start game
@@ -863,11 +866,12 @@ if __name__ == '__main__':
                         pygame.mixer.music.set_volume(0.1)
                         pygame.mixer.music.load('Data/sounds/castle music.mp3')
                         pygame.mixer.music.play(loops=-1)
-                    elif continue_pos[0] <= x <= continue_pos[2] and continue_pos[1] <= y <= continue_pos[3]:
-                        print('continue')
+                    elif fcont and continue_pos[0] <= x <= continue_pos[2] and\
+                            continue_pos[1] <= y <= continue_pos[3]:
+                        condition_trigger = last_condition
                     elif exit_pos[0] <= x <= exit_pos[2] and exit_pos[1] <= y <= exit_pos[3]:
                         running = False
-            menuScreen(screen, width, height, colorkey)
+            menuScreen(screen, width, height, colorkey, cont=fcont)
 
         elif condition_trigger == 2:
             if not shop_trigger:
@@ -901,6 +905,18 @@ if __name__ == '__main__':
                         # horizontal move end
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1 and\
+                                event.pos[0] > 10 and\
+                                event.pos[0] < 60 and\
+                                event.pos[1] > 10 and\
+                                event.pos[1] < 64:
+                            condition_trigger = 0
+                            pygame.mixer.music.set_volume(0.1)
+                            pygame.mixer.music.load('Data/sounds/castle music.mp3')
+                            pygame.mixer.music.play(loops=-1)
+                            fcont = True
+                            last_condition = 2
+                            continue
+                        elif event.button == 1 and\
                                 event.pos[0] > portal.rect.x and\
                                 event.pos[0] < portal.rect.x + portal.rect.width and\
                                 event.pos[1] > portal.rect.y and\
@@ -941,7 +957,7 @@ if __name__ == '__main__':
                 # vertical move end
 
                 # enemies spawn
-                if int(time) % 6 == 0:
+                if int(time) % 10 == 0:
                     time += 1
                     newWave(typesOfEnemies)
                 # Main act
@@ -978,6 +994,7 @@ if __name__ == '__main__':
                 shop_group.update()
 
         elif condition_trigger == 3:
+            fcont = False
             for elem in all_sprites:
                 elem.kill()
             for event in pygame.event.get():
@@ -1029,7 +1046,19 @@ if __name__ == '__main__':
                     elif event.key == pygame.K_LEFT:
                         left_trigger = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1 and not player.attackTrigger:
+                    if event.button == 1 and \
+                            event.pos[0] > 10 and \
+                            event.pos[0] < 60 and \
+                            event.pos[1] > 10 and \
+                            event.pos[1] < 64:
+                        condition_trigger = 0
+                        pygame.mixer.music.set_volume(0.1)
+                        pygame.mixer.music.load('Data/sounds/castle music.mp3')
+                        pygame.mixer.music.play(loops=-1)
+                        fcont = True
+                        last_condition = 4
+                        continue
+                    elif event.button == 1 and not player.attackTrigger:
                         player.hit(event.pos)
                     elif event.button == 3 and not player.attackTrigger:
                         x1, y1 = event.pos
@@ -1078,6 +1107,7 @@ if __name__ == '__main__':
             # Main act
             screen.fill((0, 0, 0))
             boss.draw_boss_name()
+            screen.blit(pause, (10, 10))
             all_boss_sprites.draw(screen)
             all_boss_sprites.update()
 
@@ -1144,7 +1174,6 @@ if __name__ == '__main__':
                             elem.kill()
                         for elem in bullets:
                             elem.kill()
-
         collisionClock += 1
         time += speedPerFrame
 
