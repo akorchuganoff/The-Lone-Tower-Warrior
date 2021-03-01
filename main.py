@@ -197,8 +197,6 @@ def shopScreen1(screen):
     screen.blit(pygame.image.load('Data/shop/arrows.gif'), (475 + 375 + 29, 66 + 375))
 
 
-
-
 class MainTower(pygame.sprite.Sprite):
     def __init__(self, x, y, hp, group, all_sprites, tools):
         super().__init__(*group)
@@ -1129,8 +1127,13 @@ if __name__ == '__main__':
                     elem.kill()
                 for elem in bullets:
                     elem.kill()
-                player.rect.y, player.rect.x = player_pos[0], player_pos[1]
-                ground = Ground(ground_pos[0], ground_pos[1], width, [all_sprites, ground_layer], sprite=True)
+                f = open("Data/coords save.txt", 'r')
+                lines = f.readlines()
+                l1 = lines[0].rstrip('\n').split()
+                l2 = lines[1].rstrip('\n').split()
+                f.close()
+                player.rect.y, player.rect.x = int(l2[0]), int(l2[1])
+                ground = Ground(int(l1[0]), int(l1[1]), width, [all_sprites, ground_layer], sprite=True)
                 condition_trigger = 2
                 collisionClock = 0
                 curBoss += 1
@@ -1194,8 +1197,10 @@ if __name__ == '__main__':
                         condition_trigger = 4
                         f1 = False
                         collisionClock = 0
-                        ground_pos = (ground.rect.x, ground.rect.y)
-                        player_pos = (player.rect.x, player.rect.y)
+                        f = open("Data/coords save.txt", 'w')
+                        print(str(ground.rect.x), str(ground.rect.y), file=f)
+                        print(str(player.rect.x), str(player.rect.y), file=f)
+                        f.close()
                         ground.rect.y = height // 8 * 7
                         isAlive = True
                         endClock = 0
