@@ -294,10 +294,17 @@ class Player(pygame.sprite.Sprite):
 
 
 class Ground(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, group):
+    def __init__(self, x, y, width, group, sprite=False):
         super().__init__(*group)
-        self.image = ground_sprite
-        self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
+        if sprite != False:
+            self.image = ground_sprite
+            self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
+        else:
+            self.image = pygame.Surface([width, height])
+            self.rect = pygame.Rect(x, y, width, height)
+            self.image.fill((255, 255, 255))
+            self.image.set_alpha(0)
+
 
     def update(self):
         pass
@@ -725,7 +732,7 @@ if __name__ == '__main__':
     horizontall_speed = 200
     vertical_speed = 500
     typesOfEnemies = ['goblin', 'giant']
-    condition_trigger = -1
+    condition_trigger = 0
     collisionClock = 0
     time = 0
     camera = Camera()
@@ -788,7 +795,7 @@ if __name__ == '__main__':
                                               [all_sprites, maintowergroup], all_sprites, tools)
                         player = Player(player_position[0], player_position[1], 500,
                                         [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
-                        ground = Ground(-300, height // 4 * 3, width, [all_sprites, ground_layer])
+                        ground = Ground(-300, height // 4 * 3, width, [all_sprites, ground_layer], sprite=True)
                         shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
                         # portal way
