@@ -8,124 +8,67 @@ from PortalClass import Portal
 
 # TODO:
 
-player_walk = [pygame.image.load('Data/main hero/run/1.png'),
-               pygame.image.load('Data/main hero/run/2.png'),
-               pygame.image.load('Data/main hero/run/3.png'),
-               pygame.image.load('Data/main hero/run/4.png'),
-               pygame.image.load('Data/main hero/run/5.png')]
+player_walk = [pygame.image.load('Data/main hero/run/' +
+                                 str(i + 1) + '.png') for i in range(5)]
 
 player_idle = [pygame.image.load('Data/main hero/idle.png')]
 
-player_attack = [pygame.image.load('Data/main hero/attack/1.png'),
-                pygame.image.load('Data/main hero/attack/2.png'),
-                pygame.image.load('Data/main hero/attack/3.png'),
-                pygame.image.load('Data/main hero/attack/4.png'),
-                pygame.image.load('Data/main hero/attack/5.png')]
+player_attack = [pygame.image.load('Data/main hero/attack/' +
+                                   str(i + 1) + '.png') for i in range(5)]
 
-player_jump = [pygame.image.load('Data/main hero/jump/1.png'),
-                pygame.image.load('Data/main hero/jump/2.png'),
-                pygame.image.load('Data/main hero/jump/3.png'),
-                pygame.image.load('Data/main hero/jump/4.png'),
-                pygame.image.load('Data/main hero/jump/5.png')]
+player_jump = [pygame.image.load('Data/main hero/jump/' +
+                                 str(i + 1) + '.png') for i in range(5)]
 
-player_death = [pygame.image.load('Data/main hero/death/1.png'),
-                pygame.image.load('Data/main hero/death/2.png'),
-                pygame.image.load('Data/main hero/death/3.png'),
-                pygame.image.load('Data/main hero/death/4.png'),
-                pygame.image.load('Data/main hero/death/5.png')]
+player_death = [pygame.image.load('Data/main hero/death/' +
+                                  str(i + 1) + '.png') for i in range(5)]
 
-easy_enemy_walk = [pygame.image.load('Data/easy enemy/walk/1.png'), pygame.image.load('Data/easy enemy/walk/2.png'),
-                   pygame.image.load('Data/easy enemy/walk/3.png'), pygame.image.load('Data/easy enemy/walk/4.png'),
-                   pygame.image.load('Data/easy enemy/walk/5.png'), pygame.image.load('Data/easy enemy/walk/6.png'),
-                   pygame.image.load('Data/easy enemy/walk/7.png')]
+easy_enemy_walk = [pygame.image.load('Data/easy enemy/walk/' +
+                                     str(i + 1) + '.png') for i in range(7)]
 
 easy_enemy_idle = [pygame.image.load('Data/easy enemy/ide.png')]
 
-easy_enemy_attack = [pygame.image.load('Data/easy enemy/attack/1.png'),
-                     pygame.image.load('Data/easy enemy/attack/2.png'),
-                     pygame.image.load('Data/easy enemy/attack/3.png'),
-                     pygame.image.load('Data/easy enemy/attack/4.png'),
-                     pygame.image.load('Data/easy enemy/attack/5.png'),
-                     pygame.image.load('Data/easy enemy/attack/6.png'),
-                     pygame.image.load('Data/easy enemy/attack/7.png')]
+easy_enemy_attack = [pygame.image.load('Data/easy enemy/walk/' +
+                                       str(i + 1) + '.png') for i in range(7)]
 
-giant_enemy_walk = [pygame.image.load('Data/giant enemy/walk/1.png'), pygame.image.load('Data/giant enemy/walk/2.png'),
-                   pygame.image.load('Data/giant enemy/walk/3.png'), pygame.image.load('Data/giant enemy/walk/4.png'),
-                   pygame.image.load('Data/giant enemy/walk/5.png'), pygame.image.load('Data/giant enemy/walk/6.png'),
-                   pygame.image.load('Data/giant enemy/walk/7.png')]
+giant_enemy_walk = [pygame.image.load('Data/giant enemy/walk/' +
+                                      str(i + 1) + '.png') for i in range(7)]
 
 giant_enemy_idle = [pygame.image.load('Data/giant enemy/idle.png')]
 
-giant_enemy_attack = [pygame.image.load('Data/giant enemy/attack/1.png'),
-                     pygame.image.load('Data/giant enemy/attack/2.png'),
-                     pygame.image.load('Data/giant enemy/attack/3.png'),
-                     pygame.image.load('Data/giant enemy/attack/4.png'),
-                     pygame.image.load('Data/giant enemy/attack/5.png'),
-                     pygame.image.load('Data/giant enemy/attack/6.png'),
-                     pygame.image.load('Data/giant enemy/attack/7.png')]
+giant_enemy_attack = [pygame.image.load('Data/giant enemy/attack/' +
+                                        str(i + 1) + '.png') for i in range(7)]
 
 fire_boss_idle = [pygame.image.load('Data/fire boss/idle.png')]
 
-fire_boss_attack = [pygame.image.load('Data/fire boss/idle.png'),
-                    pygame.image.load('Data/fire boss/idle.png'),
-                    pygame.image.load('Data/fire boss/idle.png'),
-                    pygame.image.load('Data/fire boss/attack/1.png'),
-                    pygame.image.load('Data/fire boss/attack/2.png'),
-                    pygame.image.load('Data/fire boss/attack/3.png'),
-                    pygame.image.load('Data/fire boss/attack/4.png'),
-                    pygame.image.load('Data/fire boss/attack/5.png')]
+fire_boss_attack = [pygame.image.load('Data/fire boss/attack/' +
+                                      str(i + 1) + '.png') for i in range(3)] +\
+                   [pygame.image.load('Data/fire boss/attack/' +
+                                      str(i + 1) + '.png') for i in range(5)]
 
-fire_boss_death = [pygame.image.load('Data/fire boss/death/1.png'),
-                    pygame.image.load('Data/fire boss/death/2.png'),
-                    pygame.image.load('Data/fire boss/death/3.png'),
-                    pygame.image.load('Data/fire boss/death/4.png'),
-                    pygame.image.load('Data/fire boss/death/5.png')]
+fire_boss_death = [pygame.image.load('Data/fire boss/death/' +
+                                     str(i + 1) + '.png') for i in range(5)]
 
 ogre_boss_idle = [pygame.image.load('Data/ogr boss/idle.png')]
 
-ogre_boss_attack = [pygame.image.load('Data/ogr boss/attack/1.png'),
-                    pygame.image.load('Data/ogr boss/attack/2.png'),
-                    pygame.image.load('Data/ogr boss/attack/3.png'),
-                    pygame.image.load('Data/ogr boss/attack/4.png'),
-                    pygame.image.load('Data/ogr boss/attack/5.png'),
-                    pygame.image.load('Data/ogr boss/attack/6.png'),
-                    pygame.image.load('Data/ogr boss/attack/7.png')]
+ogre_boss_attack = [pygame.image.load('Data/ogr boss/attack/' +
+                                      str(i + 1) + '.png') for i in range(7)]
 
-ogre_boss_death = [pygame.image.load('Data/ogr boss/death/1.png'),
-                    pygame.image.load('Data/ogr boss/death/2.png'),
-                    pygame.image.load('Data/ogr boss/death/3.png'),
-                    pygame.image.load('Data/ogr boss/death/4.png'),
-                    pygame.image.load('Data/ogr boss/death/5.png'),
-                    pygame.image.load('Data/ogr boss/death/6.png'),
-                    pygame.image.load('Data/ogr boss/death/7.png')]
+ogre_boss_death = [pygame.image.load('Data/ogr boss/death/' +
+                                     str(i + 1) + '.png') for i in range(7)]
 
-ogre_boss_walk = [pygame.image.load('Data/ogr boss/walk/1.png'), pygame.image.load('Data/ogr boss/walk/2.png'),
-                   pygame.image.load('Data/ogr boss/walk/3.png'), pygame.image.load('Data/ogr boss/walk/4.png'),
-                   pygame.image.load('Data/ogr boss/walk/5.png'), pygame.image.load('Data/ogr boss/walk/6.png'),
-                   pygame.image.load('Data/ogr boss/walk/7.png')]
+ogre_boss_walk = [pygame.image.load('Data/ogr boss/walk/' +
+                                    str(i + 1) + '.png') for i in range(7)]
 
 summoner_boss_idle = [pygame.image.load('Data/summoner boss/idle.png')]
 
-summoner_boss_attack = [pygame.image.load('Data/summoner boss/attack/1.png'),
-                    pygame.image.load('Data/summoner boss/attack/2.png'),
-                    pygame.image.load('Data/summoner boss/attack/3.png'),
-                    pygame.image.load('Data/summoner boss/attack/4.png'),
-                    pygame.image.load('Data/summoner boss/attack/5.png'),
-                    pygame.image.load('Data/summoner boss/attack/6.png'),
-                    pygame.image.load('Data/summoner boss/attack/7.png')]
+summoner_boss_attack = [pygame.image.load('Data/summoner boss/attack/' +
+                                          str(i + 1) + '.png') for i in range(7)]
 
-summoner_boss_death = [pygame.image.load('Data/summoner boss/death/1.png'),
-                    pygame.image.load('Data/summoner boss/death/2.png'),
-                    pygame.image.load('Data/summoner boss/death/3.png'),
-                    pygame.image.load('Data/summoner boss/death/4.png'),
-                    pygame.image.load('Data/summoner boss/death/5.png'),
-                    pygame.image.load('Data/summoner boss/death/6.png'),
-                    pygame.image.load('Data/summoner boss/death/7.png')]
+summoner_boss_death = [pygame.image.load('Data/summoner boss/death/' +
+                                          str(i + 1) + '.png') for i in range(7)]
 
-summoner_boss_walk = [pygame.image.load('Data/summoner boss/walk/1.png'), pygame.image.load('Data/summoner boss/walk/2.png'),
-                   pygame.image.load('Data/summoner boss/walk/3.png'), pygame.image.load('Data/summoner boss/walk/4.png'),
-                   pygame.image.load('Data/summoner boss/walk/5.png'), pygame.image.load('Data/summoner boss/walk/6.png'),
-                   pygame.image.load('Data/summoner boss/walk/7.png')]
+summoner_boss_walk = [pygame.image.load('Data/summoner boss/walk/' +
+                                          str(i + 1) + '.png') for i in range(7)]
 
 ground_sprite = pygame.image.load('Data/env/ground.png')
 border_sprite = pygame.image.load('Data/env/tree.png')
@@ -265,7 +208,7 @@ class Player(pygame.sprite.Sprite):
         self.damage = 4
         self.step = 0
         self.arrows = 20
-        self.potions = 0
+        self.potions = 1
 
     def hit(self, pos, coords=(), group=False):
         global last_move
@@ -295,31 +238,39 @@ class Player(pygame.sprite.Sprite):
             if self.attackClock == len(self.frames) * 3:
                 self.attackTrigger = False
                 if self.archeryTrigger:
+                    self.archeryTrigger = False
                     if self.arrows == 0:
                         return
                     pygame.mixer.Sound('Data/sounds/bow_jump.mp3').play()
                     self.archery(*self.archery_coords, self.archery_group)
-                    self.archeryTrigger = False
                     self.arrows -= 1
                     return
                 fsoundhit = False
-                for enemy in pygame.sprite.spritecollide(self, enemies, False):
-                    enemy.hp -= self.damage
+                if last_move == 'left':
+                    self.rect.x -= 30
+                else:
+                    self.rect.x += 30
+                target1 = pygame.sprite.spritecollideany(self, enemies)
+                target2 = pygame.sprite.spritecollideany(self, boss_group)
+                if target1:
+                    target1.hp -= self.damage
                     fsoundhit = True
-                for enemy in pygame.sprite.spritecollide(self, boss_group, False):
-                    enemy.hp -= self.damage
+                elif target2:
+                    target2.hp -= self.damage
                     fsoundhit = True
+                if last_move == 'left':
+                    self.rect.x += 30
+                else:
+                    self.rect.x -= 30
                 if fsoundhit:
                     pygame.mixer.Sound('Data/sounds/hit.mp3').play()
             return
         if pygame.sprite.spritecollideany(self, ground_layer):
             self.isGrounded = True
-            # animation
             if self.vx == 0 and collisionClock % 5 == 0:
                 self.image = self.frames_idle[0]
                 if last_move == 'left':
                     self.image = pygame.transform.flip(self.image, True, False)
-
             elif collisionClock % 5 == 0:
                 if collisionClock % 10 == 0:
                     pygame.mixer.Sound('Data/sounds/steps/stone' + str(self.step % 6 + 1) + '.mp3').play()
@@ -329,7 +280,6 @@ class Player(pygame.sprite.Sprite):
                 self.image = self.frames[self.cur_frame]
                 if last_move == 'left':
                     self.image = pygame.transform.flip(self.image, True, False)
-            # end animation
             if self.vy <= 0:
                 self.rect = self.rect.move(self.vx, self.vy)
             else:
@@ -366,7 +316,7 @@ class Player(pygame.sprite.Sprite):
             angle = 90
         arrow = pygame.transform.rotate(pygame.image.load('Data/arrow2.png'), angle)
         return Bullet(player.rect.x + player.width // 2,
-                      player.rect.y + 30, arrow, dx, vx, self.damage,
+                      player.rect.y + 30, arrow, dx, vx, round(self.damage * 0.6),
                       'enemies', [group, bullets], vy)
 
 
@@ -381,10 +331,6 @@ class Ground(pygame.sprite.Sprite):
             self.rect = pygame.Rect(x, y, width, 5)
             self.image.fill((255, 255, 255))
             self.image.set_alpha(0)
-
-
-    def update(self):
-        pass
 
 
 class VerticalBorder(pygame.sprite.Sprite):
@@ -410,7 +356,6 @@ class VerticalBorder(pygame.sprite.Sprite):
                 right_trigger = False
 
 
-
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, player, group, all_sprites, tools, hp=10,
                  attack=None, idle=None, walk=None, death=None):
@@ -419,7 +364,6 @@ class Enemy(pygame.sprite.Sprite):
         self.hp = hp
         self.attackTrigger = False
         self.attackClock = 0
-
         self.frames_walk = walk
         self.frames_idle = idle
         self.frames_attack = attack
@@ -487,7 +431,6 @@ class Boss(Enemy):
         self.name = name
         self.hpBar.kill()
         self.hpBar = Boss_HPbar(self, [all_boss_sprites, tools])
-
         self.vy = 0
         self.attackClock = 0
         self.abilityClock = 0
@@ -786,23 +729,18 @@ class Money(pygame.sprite.Sprite):
         text = font.render(f"Your balance: {self.amount}", True, (32, 28, 43))
         text_x = 100
         text_y = 50
-        text_w = text.get_width()
-        text_h = text.get_height()
         screen.blit(text, (text_x, text_y))
 
 
 class Camera:
-    # зададим начальный сдвиг камеры
     def __init__(self):
         self.dx = 0
         self.dy = 0
 
-    # сдвинуть объект obj на смещение камеры
     def apply(self, obj):
         obj.rect.x += self.dx
         obj.rect.y += self.dy
 
-    # позиционировать камеру на объекте target
     def update(self, target):
         self.dx = -(target.rect.x + target.rect.w // 2 - width // 2)
         self.dy = -(target.rect.y + target.rect.h // 2 - height // 4 * 3)
@@ -830,25 +768,32 @@ if __name__ == '__main__':
     pygame.init()
     size = width, height = 1200, 800
     screen = pygame.display.set_mode(size)
-    clock = pygame.time.Clock()
+    # standard images
     image2 = pygame.image.load('Data/fon.png')
     pause = pygame.image.load('Data/pause.png')
-    # const
+    potions = pygame.image.load('Data/potions.png')
+    arrows = pygame.image.load('Data/arrows.png')
+    # shop consts
     attack_upgrade_cost = 10
     health_upgrade_cost = 10
     tower_upgrade_cost = 10
     heal_tower_cost = 50
     potion_cost = 50
     arrows_cost = 20
+    # main consts
     running = True
     player_position = [width // 2, height // 2]
     horizontall_speed = 200
     vertical_speed = 500
     typesOfEnemies = ['goblin', 'giant']
+    # conditions and clocks
+    clock = pygame.time.Clock()
     condition_trigger = -1
     collisionClock = 0
-    time = 0
+    time = 10
+    # is available continue button
     fcont = False
+    # camera?
     camera = Camera()
     # New logo
     i = 0
@@ -863,8 +808,10 @@ if __name__ == '__main__':
     pygame.mixer.music.set_volume(0.5)
     pygame.mixer.music.load('Data/sounds/menu music.mp3')
     pygame.mixer.music.play(loops=-1)
+    # del old notes
+    f = open("Data/coords save.txt", 'w')
+    f.close()
 
-    print(colorkey)
     while running:
         speedPerFrame = clock.tick(fps) / 1000
         if condition_trigger == -1:
@@ -882,7 +829,6 @@ if __name__ == '__main__':
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = event.pos
                     start_pos, continue_pos, exit_pos = menuScreen(screen, width, height, colorkey, cont=fcont)
@@ -906,11 +852,10 @@ if __name__ == '__main__':
                                               [all_sprites, maintowergroup], all_sprites, tools)
                         player = Player(player_position[0], player_position[1], 500,
                                         [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
-
                         leftBD = VerticalBorder(-300, 100, 400, player, [all_sprites], sprite=True)
                         rightBD = VerticalBorder(1200, 100, 400, player, [all_sprites], sprite=True)
-
                         ground = Ground(-700, height // 4 * 3, width, [all_sprites, ground_layer], sprite=True)
+
                         waves = 0
                         curBoss = 1
                         portal = Portal([all_sprites, portal_group])
@@ -920,46 +865,52 @@ if __name__ == '__main__':
                         jump_trigger = False
                         shop_trigger = False
                         last_move = 'right'
+
                         pygame.mixer.music.set_volume(0.1)
                         pygame.mixer.music.load('Data/sounds/castle music.mp3')
                         pygame.mixer.music.play(loops=-1)
                     elif fcont and continue_pos[0] <= x <= continue_pos[2] and\
                             continue_pos[1] <= y <= continue_pos[3]:
+                        # it indicates whether to return (to the boss or to the castle)
                         condition_trigger = last_condition
                     elif exit_pos[0] <= x <= exit_pos[2] and exit_pos[1] <= y <= exit_pos[3]:
                         running = False
             menuScreen(screen, width, height, colorkey, cont=fcont)
 
         elif condition_trigger == 2:
+            print(speedPerFrame)
             if not shop_trigger:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
                     if event.type == pygame.KEYDOWN:
-                        # horizontal move begin
+                        # horizontal move
                         if event.key == pygame.K_RIGHT:
                             right_trigger = True
                             left_trigger = False
                         elif event.key == pygame.K_LEFT:
                             right_trigger = False
                             left_trigger = True
-                        # horizontal move end
                         # vertical move
                         elif event.key == pygame.K_UP:
                             s = pygame.mixer.Sound('Data/sounds/bow_jump.mp3')
                             s.set_volume(0.5)
                             s.play()
                             jump_trigger = True
-                        # vertical move end
+                        # shop
                         elif event.key == pygame.K_q:
                             shop_trigger = True
+                        elif event.key == pygame.K_e:
+                            if player.potions > 0 and player.hp != player.fullhp:
+                                player.potions -= 1
+                                player.hp = min(player.fullhp, round(player.hp * 1.2))
                     elif event.type == pygame.KEYUP:
-                        # horizontal move begin
+                        # horizontal move
                         if event.key == pygame.K_RIGHT:
                             right_trigger = False
                         elif event.key == pygame.K_LEFT:
                             left_trigger = False
-                        # horizontal move end
+                        # pause
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1 and\
                                 event.pos[0] > 10 and\
@@ -973,6 +924,7 @@ if __name__ == '__main__':
                             fcont = True
                             last_condition = 2
                             continue
+                        # boss choose
                         elif event.button == 1 and\
                                 event.pos[0] > portal.rect.x and\
                                 event.pos[0] < portal.rect.x + portal.rect.width and\
@@ -980,8 +932,10 @@ if __name__ == '__main__':
                                 event.pos[1] < portal.rect.y + portal.rect.height:
                             condition_trigger = 5
                             continue
+                        # hit
                         elif event.button == 1 and not player.attackTrigger:
                             player.hit(event.pos)
+                        # bow shot
                         elif event.button == 3 and not player.attackTrigger:
                             x1, y1 = event.pos
                             x2, y2 = player.rect.x + player.width // 2, player.rect.y + player.height // 2
@@ -991,8 +945,7 @@ if __name__ == '__main__':
                     pygame.mixer.music.load('Data/sounds/menu music.mp3')
                     pygame.mixer.music.play(loops=-1)
                     condition_trigger = 3
-
-                # horizontal move begin
+                # horizontal move
                 if left_trigger:
                     player.vx = -1 * horizontall_speed * speedPerFrame
                     last_move = 'left'
@@ -1001,8 +954,7 @@ if __name__ == '__main__':
                     last_move = 'right'
                 else:
                     player.vx = 0
-                # horizontal move end
-                # vertical move begin
+                # vertical move
                 if jump_trigger:
                     if player.isGrounded:
                         vertical_speed = -300
@@ -1014,17 +966,21 @@ if __name__ == '__main__':
                     else:
                         vertical_speed += 20
                     player.vy = vertical_speed * speedPerFrame
-                # vertical move end
-
                 # enemies spawn
-                if int(time) % 10 == 0:
+                if int(time) % 15 == 0:
                     time += 1
                     newWave(typesOfEnemies)
-                # Main act
                 screen.fill((0, 0, 0))
                 screen.blit(image2, (-350, -125))
-                screen.blit(pause, (10, 10))
                 all_sprites.draw(screen)
+                screen.blit(pause, (10, 10))
+                font = pygame.font.Font(None, 40)
+                text = font.render(str(player.arrows), True, (32, 28, 43))
+                screen.blit(text, (70, 80))
+                text = font.render(str(player.potions), True, (32, 28, 43))
+                screen.blit(text, (70, 140))
+                screen.blit(arrows, (10, 80))
+                screen.blit(potions, (10, 140))
                 all_sprites.update()
 
                 camera.update(player)
@@ -1091,6 +1047,7 @@ if __name__ == '__main__':
                         running = False
 
         elif condition_trigger == 4:
+            print(speedPerFrame)
             if not f1:
                 player.rect.y -= 200
                 f1 = True
@@ -1102,7 +1059,6 @@ if __name__ == '__main__':
                 if event.type == pygame.QUIT:
                     running = False
                 elif event.type == pygame.KEYDOWN:
-                    # horizontal move begin
                     if event.key == pygame.K_RIGHT:
                         last_move = 'right'
                         right_trigger = True
@@ -1111,14 +1067,15 @@ if __name__ == '__main__':
                         last_move = 'left'
                         right_trigger = False
                         left_trigger = True
-                    # horizontal move end
-                    # vertical move
                     elif event.key == pygame.K_UP:
                         s = pygame.mixer.Sound('Data/sounds/bow_jump.mp3')
                         s.set_volume(0.5)
                         s.play()
                         jump_trigger = True
-                    # vertical move end
+                    elif event.key == pygame.K_e:
+                        if player.potions > 0 and player.hp != player.fullhp:
+                            player.potions -= 1
+                            player.hp = min(player.fullhp, round(player.hp * 1.2))
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_RIGHT:
                         right_trigger = False
@@ -1143,21 +1100,17 @@ if __name__ == '__main__':
                         x1, y1 = event.pos
                         x2, y2 = player.rect.x + player.width // 2, player.rect.y + player.height // 2
                         player.hit(event.pos, coords=(x1, y1, x2, y2), group=all_boss_sprites)
-
             if player.hp <= 0 or mainTower.hp <= 0:
                 pygame.mixer.music.set_volume(0.5)
                 pygame.mixer.music.load('Data/sounds/menu music.mp3')
                 pygame.mixer.music.play(loops=-1)
                 condition_trigger = 3
-            # horizontal move begin
             if left_trigger:
                 player.vx = -1 * horizontall_speed * speedPerFrame
             elif right_trigger:
                 player.vx = horizontall_speed * speedPerFrame
             else:
                 player.vx = 0
-            # horizontal move end
-            # vertical move begin
             if jump_trigger:
                 if player.isGrounded:
                     vertical_speed = -300
@@ -1169,7 +1122,7 @@ if __name__ == '__main__':
                 else:
                     vertical_speed += 20
                 player.vy = vertical_speed * speedPerFrame
-
+            # end of the boss battle
             if not isAlive:
                 for elem in enemies:
                     elem.hpBar.kill()
@@ -1190,15 +1143,21 @@ if __name__ == '__main__':
                 condition_trigger = 2
                 collisionClock = 0
                 curBoss += 1
-            # vertical move end
-            # Main act
             screen.fill((0, 0, 0))
             boss.draw_boss_name()
-            screen.blit(pause, (10, 10))
             all_boss_sprites.draw(screen)
+            screen.blit(pause, (10, 10))
+            font = pygame.font.Font(None, 40)
+            text = font.render(str(player.arrows), True, (255, 255, 255))
+            screen.blit(text, (70, 80))
+            text = font.render(str(player.potions), True, (255, 255, 255))
+            screen.blit(text, (70, 140))
+            screen.blit(arrows, (10, 80))
+            screen.blit(potions, (10, 140))
             all_boss_sprites.update()
 
         elif condition_trigger == 5:
+            # boss menu
             menuBoss(screen, curBoss)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -1265,6 +1224,5 @@ if __name__ == '__main__':
                             elem.kill()
         collisionClock += 1
         time += speedPerFrame
-
         pygame.display.flip()
     pygame.quit()
