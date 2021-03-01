@@ -196,6 +196,31 @@ def shopScreen1(screen):
     screen.blit(pygame.image.load('Data/shop/potion.gif'), (475 + 65, 68 + 375))
     screen.blit(pygame.image.load('Data/shop/arrows.gif'), (475 + 375 + 29, 66 + 375))
 
+    font = pygame.font.Font(None, 50)
+    balance_text_x1 = 100
+    balance_text_x2 = 100 + 375
+    balance_text_x3 = 100 + 375 * 2
+    balance_text_y1 = 360
+    balance_text_y2 = 360 + 375
+
+    balance_text = font.render(f"Upgrage cost: {attack_upgrade_cost}", True, (200, 200, 200))
+    screen.blit(balance_text, (balance_text_x1, balance_text_y1))
+
+    balance_text = font.render(f"Upgrage cost: {health_upgrade_cost}", True, (200, 200, 200))
+    screen.blit(balance_text, (balance_text_x2, balance_text_y1))
+
+    balance_text = font.render(f"Upgrage cost: {tower_upgrade_cost}", True, (200, 200, 200))
+    screen.blit(balance_text, (balance_text_x3, balance_text_y1))
+
+    balance_text = font.render(f"Heal cost: {heal_tower_cost}", True, (200, 200, 200))
+    screen.blit(balance_text, (balance_text_x1 + 25, balance_text_y2))
+
+    balance_text = font.render(f"Upgrage cost: {potion_cost}", True, (200, 200, 200))
+    screen.blit(balance_text, (balance_text_x2, balance_text_y2))
+
+    balance_text = font.render(f"Upgrage cost: {arrows_cost}", True, (200, 200, 200))
+    screen.blit(balance_text, (balance_text_x3, balance_text_y2))
+
 
 class MainTower(pygame.sprite.Sprite):
     def __init__(self, x, y, hp, group, all_sprites, tools):
@@ -802,6 +827,12 @@ if __name__ == '__main__':
     image2 = pygame.image.load('Data/fon.png')
     pause = pygame.image.load('Data/pause.png')
     # const
+    attack_upgrade_cost = 10
+    health_upgrade_cost = 10
+    tower_upgrade_cost = 10
+    heal_tower_cost = 50
+    potion_cost = 50
+    arrows_cost = 20
     running = True
     player_position = [width // 2, height // 2]
     horizontall_speed = 200
