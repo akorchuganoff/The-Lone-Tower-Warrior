@@ -228,12 +228,13 @@ class MainTower(pygame.sprite.Sprite):
         self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
         self.width = self.rect.width
         self.height = self.rect.height
+        self.fullhp = hp
         self.hp = hp
         self.MainTowerHPbar = HPbar(self, 500, 20, [all_sprites, tools])
         self.damage = 0
 
     def update(self):
-        if collisionClock % 5 == 0:
+        if collisionClock % 60 == 0:
             for enemy in pygame.sprite.spritecollide(self, enemies, False):
                 enemy.hp -= self.damage
 
@@ -256,11 +257,15 @@ class Player(pygame.sprite.Sprite):
         self.isGrounded = False
         self.attackTrigger = False
         self.archeryTrigger = False
+        self.fullhp = hp
         self.hp = hp
         self.PlayerHPbar = HPbar(self, self.frames_idle[0].get_width(), 10, [all_sprites, tools, all_boss_sprites])
         self.width = self.frames_idle[0].get_width()
         self.height = self.frames_idle[0].get_height()
+        self.damage = 4
         self.step = 0
+        self.arrows = 20
+        self.potions = 0
 
     def hit(self, pos, coords=(), group=False):
         global last_move
@@ -290,16 +295,19 @@ class Player(pygame.sprite.Sprite):
             if self.attackClock == len(self.frames) * 3:
                 self.attackTrigger = False
                 if self.archeryTrigger:
+                    if self.arrows == 0:
+                        return
                     pygame.mixer.Sound('Data/sounds/bow_jump.mp3').play()
                     self.archery(*self.archery_coords, self.archery_group)
                     self.archeryTrigger = False
+                    self.arrows -= 1
                     return
                 fsoundhit = False
                 for enemy in pygame.sprite.spritecollide(self, enemies, False):
-                    enemy.hp -= 10
+                    enemy.hp -= self.damage
                     fsoundhit = True
                 for enemy in pygame.sprite.spritecollide(self, boss_group, False):
-                    enemy.hp -= 10
+                    enemy.hp -= self.damage
                     fsoundhit = True
                 if fsoundhit:
                     pygame.mixer.Sound('Data/sounds/hit.mp3').play()
@@ -358,7 +366,7 @@ class Player(pygame.sprite.Sprite):
             angle = 90
         arrow = pygame.transform.rotate(pygame.image.load('Data/arrow2.png'), angle)
         return Bullet(player.rect.x + player.width // 2,
-                      player.rect.y + 30, arrow, dx, vx, 5,
+                      player.rect.y + 30, arrow, dx, vx, self.damage,
                       'enemies', [group, bullets], vy)
 
 
@@ -1035,17 +1043,32 @@ if __name__ == '__main__':
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         pos = event.pos
                         if pos[0] in range(100, 250 + 75) and pos[1] in range(100, 250 + 100):
-                            print(1)
+                            if money.amount >= attack_upgrade_cost:
+                                money.amount -= attack_upgrade_cost
+                                player.damage += 2
                         elif pos[0] in range(475, 250 + 475) and pos[1] in range(100, 250 + 100):
-                            print(2)
+                            if money.amount >= health_upgrade_cost:
+                                money.amount -= health_upgrade_cost
+                                player.fullhp += 20
                         elif pos[0] in range(850, 250 + 850) and pos[1] in range(100, 250 + 100):
-                            print(3)
+                            if money.amount >= tower_upgrade_cost:
+                                money.amount -= tower_upgrade_cost
+                                mainTower.damage += 2
+                                mainTower.fullhp += 30
                         elif pos[0] in range(100, 250 + 75) and pos[1] in range(475, 250 + 475):
-                            print(4)
+                            if money.amount >= heal_tower_cost:
+                                money.amount -= heal_tower_cost
+                                mainTower.hp += mainTower.fullhp * 0.1
+                                if mainTower.hp > mainTower.fullhp:
+                                    mainTower.hp = mainTower.fullhp
                         elif pos[0] in range(475, 250 + 475) and pos[1] in range(475, 250 + 475):
-                            print(5)
+                            if money.amount >= potion_cost:
+                                money.amount -= potion_cost
+                                player.potions += 1
                         elif pos[0] in range(850, 250 + 850) and pos[1] in range(475, 250 + 475):
-                            print(6)
+                            if money.amount >= arrows_cost:
+                                money.amount -= arrows_cost
+                                player.arrows += 5
                 shopScreen1(screen)
 
         elif condition_trigger == 3:
