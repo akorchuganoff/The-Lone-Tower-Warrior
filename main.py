@@ -105,6 +105,29 @@ ogre_boss_walk = [pygame.image.load('Data/ogr boss/walk/1.png'), pygame.image.lo
                    pygame.image.load('Data/ogr boss/walk/5.png'), pygame.image.load('Data/ogr boss/walk/6.png'),
                    pygame.image.load('Data/ogr boss/walk/7.png')]
 
+summoner_boss_idle = [pygame.image.load('Data/summoner boss/idle.png')]
+
+summoner_boss_attack = [pygame.image.load('Data/summoner boss/attack/1.png'),
+                    pygame.image.load('Data/summoner boss/attack/2.png'),
+                    pygame.image.load('Data/summoner boss/attack/3.png'),
+                    pygame.image.load('Data/summoner boss/attack/4.png'),
+                    pygame.image.load('Data/summoner boss/attack/5.png'),
+                    pygame.image.load('Data/summoner boss/attack/6.png'),
+                    pygame.image.load('Data/summoner boss/attack/7.png')]
+
+summoner_boss_death = [pygame.image.load('Data/summoner boss/death/1.png'),
+                    pygame.image.load('Data/summoner boss/death/2.png'),
+                    pygame.image.load('Data/summoner boss/death/3.png'),
+                    pygame.image.load('Data/summoner boss/death/4.png'),
+                    pygame.image.load('Data/summoner boss/death/5.png'),
+                    pygame.image.load('Data/summoner boss/death/6.png'),
+                    pygame.image.load('Data/summoner boss/death/7.png')]
+
+summoner_boss_walk = [pygame.image.load('Data/summoner boss/walk/1.png'), pygame.image.load('Data/summoner boss/walk/2.png'),
+                   pygame.image.load('Data/summoner boss/walk/3.png'), pygame.image.load('Data/summoner boss/walk/4.png'),
+                   pygame.image.load('Data/summoner boss/walk/5.png'), pygame.image.load('Data/summoner boss/walk/6.png'),
+                   pygame.image.load('Data/summoner boss/walk/7.png')]
+
 
 def logo(screen, width, height):
     if i > 222:
@@ -392,11 +415,6 @@ class Boss(Enemy):
         else:
             self.attackTrigger = False
 
-    def walk(self):
-        self.cur_frame = -1
-        self.frames = self.frames_walk
-
-
 class FireBoss(Boss):
     def update(self):
         super().update()
@@ -439,17 +457,53 @@ class FireBoss(Boss):
 class Summoner(Boss):
     def update(self):
         super().update()
-        if collisionClock % 75 == 59:
-            enemy = Enemy(self.rect.x, self.rect.y, boss_ground.rect.y - 100, player, [all_sprites, enemies],
-                          all_sprites, tools, hp=10, attack=easy_enemy_attack,
-                          walk=easy_enemy_walk, idle=easy_enemy_idle)
-        if collisionClock % 5 == 0:
-            if pygame.sprite.spritecollideany(self, player_group):
-                player.hp -= 1
-        if self.player.rect.x + self.player.width // 2 > self.rect.x + self.rect.width // 2:
-            self.rect.x += 40 * speedPerFrame
-        elif self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
-            self.rect.x -= 10 * speedPerFrame
+        if self.deathTrigger:
+            return
+        self.abilityClock += 1
+        if self.abilityClock == 118:
+            self.abilityClock = 0
+            self.abilityTrigger = True
+        if self.abilityTrigger:
+            self.frames = self.frames_attack
+            if self.abilityClock % 4 == 3:
+                self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+                self.image = self.frames[self.cur_frame]
+                self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height() + self.vy
+                if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                    self.image = pygame.transform.flip(self.image, True, False)
+            if self.abilityClock == 28:
+                enemy = Enemy(self.rect.x, boss_ground.rect.y - 100, player, [all_boss_sprites, enemies],
+                              all_boss_sprites, tools, hp=10, attack=easy_enemy_attack,
+                              walk=easy_enemy_walk, idle=easy_enemy_idle)
+                self.abilityTrigger = False
+                self.cur_frame = -1
+            return
+        if self.attackTrigger:
+            self.attackClock += 1
+            self.frames = self.frames_attack
+            if collisionClock % 4 == 3:
+                self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+                self.image = self.frames[self.cur_frame]
+                self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height()
+                if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                    self.image = pygame.transform.flip(self.image, True, False)
+            if self.attackClock == 4 * len(self.frames):
+                self.attackClock = 0
+                self.attackTrigger = False
+                self.player.hp -= 30
+                self.cur_frame = -1
+            return
+        if collisionClock % 4 == 3:
+            self.frames = self.frames_walk
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+            self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height()
+            if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                self.image = pygame.transform.flip(self.image, True, False)
+            if self.player.rect.x + self.player.width // 2 > self.rect.x + self.rect.width // 2:
+                self.rect.x += 280 * speedPerFrame
+            elif self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
+                self.rect.x -= 250 * speedPerFrame
 
 
 class Ogre(Boss):
@@ -472,7 +526,7 @@ class Ogre(Boss):
                 self.cur_frame = (self.cur_frame + 1) % len(self.frames)
                 self.image = self.frames[self.cur_frame]
                 self.rect.y = boss_ground.rect.y - self.frames[self.cur_frame].get_height() + self.vy
-                if width // 2 < self.rect.x + self.rect.width // 2:
+                if self.player.rect.x + self.player.width // 2 < self.rect.x + self.rect.width // 2:
                     self.image = pygame.transform.flip(self.image, True, False)
             if self.abilityClock == 35:
                 self.vy = 0
@@ -493,7 +547,7 @@ class Ogre(Boss):
             if self.attackClock == 4 * len(self.frames):
                 self.attackClock = 0
                 self.attackTrigger = False
-                self.player.hp -= 30
+                self.player.hp -= 40
                 self.cur_frame = -1
             return
         if collisionClock % 4 == 3:
@@ -756,7 +810,7 @@ if __name__ == '__main__':
                                 event.pos[1] > portal.rect.y and\
                                 event.pos[1] < portal.rect.y + portal.rect.height:
                             # Я знаю что это отвратительно и бессовестно, но что поделать
-                            if True:
+                            if False:
                                 name = 'Wizard'
                                 boss = FireBoss(width - 200, height // 8 * 4, player,
                                                 [all_boss_sprites, boss_group], all_boss_sprites,
@@ -768,18 +822,32 @@ if __name__ == '__main__':
                                 collisionClock = 0
                                 ground.kill()
                                 continue
-                            name = 'Ogre'
-                            boss = Ogre(width - 200, height // 8 * 4, player,
+                            if False:
+                                name = 'Ogre'
+                                boss = Ogre(width - 200, height // 8 * 4, player,
+                                                [all_boss_sprites, boss_group], all_boss_sprites,
+                                                tools, name, 500, pygame.image.load('Data/fon3.png'),
+                                                attack=ogre_boss_attack, walk=ogre_boss_walk,
+                                                idle=ogre_boss_idle, death=ogre_boss_death)
+                                boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
+                                condition_trigger = 4
+                                f1 = False
+                                collisionClock = 0
+                                ground.kill()
+                                continue
+                            if True:
+                                name = 'Summoner'
+                                boss = Summoner(width - 200, height // 8 * 4, player,
                                             [all_boss_sprites, boss_group], all_boss_sprites,
-                                            tools, name, 300, pygame.image.load('Data/fon3.png'),
-                                            attack=ogre_boss_attack, walk=ogre_boss_walk,
-                                            idle=ogre_boss_idle, death=ogre_boss_death)
-                            boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
-                            condition_trigger = 4
-                            f1 = False
-                            collisionClock = 0
-                            ground.kill()
-                            continue
+                                            tools, name, 300, pygame.image.load('Data/fon2.jpg'),
+                                            attack=summoner_boss_attack, walk=summoner_boss_walk,
+                                            idle=summoner_boss_idle, death=summoner_boss_death)
+                                boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
+                                condition_trigger = 4
+                                f1 = False
+                                collisionClock = 0
+                                ground.rect.y = height // 8 * 7
+                                continue
                             # Конец этого ужаса
                         elif event.button == 1 and not player.attackTrigger:
                             player.hit(event.pos)
