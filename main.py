@@ -176,6 +176,17 @@ def menuBoss(screen, curBoss):
         screen.blit(pygame.image.load('Data/menu/summoner(killed).gif'), (150, 380))
 
 
+def shopScreen1(screen):
+    screen.blit(pygame.image.load('Data/shop/menu.png'), (0, 0))
+    screen.blit(pygame.image.load('Data/shop/sword.png'), (125, 119))
+    screen.blit(pygame.image.load('Data/shop/heart.png'), (500, 130))
+    screen.blit(pygame.image.load('Data/shop/tower.png'), (925, 125))
+    screen.blit(pygame.image.load('Data/shop/heart.png'), (125, 130 + 375))
+    screen.blit(pygame.image.load('Data/shop/potion.png'), (475 + 48, 130 + 375))
+    screen.blit(pygame.image.load('Data/shop/bow.png'), (125 + 375 * 2, 125 + 375))
+
+
+
 class MainTower(pygame.sprite.Sprite):
     def __init__(self, x, y, hp, group, all_sprites, tools):
         super().__init__(*group)
@@ -786,7 +797,7 @@ if __name__ == '__main__':
     horizontall_speed = 200
     vertical_speed = 500
     typesOfEnemies = ['goblin', 'giant']
-    condition_trigger = -1
+    condition_trigger = 0
     collisionClock = 0
     time = 0
     fcont = False
@@ -995,6 +1006,7 @@ if __name__ == '__main__':
                                 pass
                 shop_group.draw(screen)
                 shop_group.update()
+                shopScreen1(screen)
 
         elif condition_trigger == 3:
             deadScreen(screen, width, height)
