@@ -994,22 +994,23 @@ if __name__ == '__main__':
                 shop_group.update()
 
         elif condition_trigger == 3:
+            deadScreen(screen, width, height)
             fcont = False
             for elem in all_sprites:
+                elem.kill()
+            for elem in all_boss_sprites:
                 elem.kill()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     pos = event.pos
-                    rx, ry, rw, rh, qx, qy, qw, qh = deadScreen(screen, width, height)
-                    # restart checking
-                    if rx <= pos[0] <= rx + rw and ry <= pos[1] <= ry + rh:
+                    if height // 2 < event.pos[1] < height // 2 + height // 4 and\
+                            width // 4 < event.pos[0] < width // 2:
                         condition_trigger = 0
-                    # quit
-                    if qx <= pos[0] <= qx + qw and qy <= pos[1] <= qy + qh:
+                    elif height // 2 < event.pos[1] < height // 2 + height // 4 and\
+                            width // 2 < event.pos[0] < width // 4 + width // 2:
                         running = False
-            deadScreen(screen, width, height)
 
         elif condition_trigger == 4:
             if not f1:
