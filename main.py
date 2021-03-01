@@ -471,7 +471,9 @@ class Boss(Enemy):
             self.deathClock += 1
             return
         if self.hp <= 0:
-            money.amount += 100
+            if name == 'Summoner' and curBoss == 1 or\
+                    name == 'Wizard' and curBoss == 2 or name == 'Ogre' and curBoss == 3:
+                money.amount += 100
             self.death()
             return
         if pygame.sprite.spritecollideany(self, player_group):
@@ -878,7 +880,6 @@ if __name__ == '__main__':
             menuScreen(screen, width, height, colorkey, cont=fcont)
 
         elif condition_trigger == 2:
-            print(speedPerFrame)
             if not shop_trigger:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -1002,15 +1003,18 @@ if __name__ == '__main__':
                             if money.amount >= attack_upgrade_cost:
                                 money.amount -= attack_upgrade_cost
                                 player.damage += 2
+                                attack_upgrade_cost += 10
                         elif pos[0] in range(475, 250 + 475) and pos[1] in range(100, 250 + 100):
                             if money.amount >= health_upgrade_cost:
                                 money.amount -= health_upgrade_cost
                                 player.fullhp += 20
+                                health_upgrade_cost += 10
                         elif pos[0] in range(850, 250 + 850) and pos[1] in range(100, 250 + 100):
                             if money.amount >= tower_upgrade_cost:
                                 money.amount -= tower_upgrade_cost
                                 mainTower.damage += 2
                                 mainTower.fullhp += 30
+                                tower_upgrade_cost += 10
                         elif pos[0] in range(100, 250 + 75) and pos[1] in range(475, 250 + 475):
                             if money.amount >= heal_tower_cost:
                                 money.amount -= heal_tower_cost
@@ -1047,7 +1051,6 @@ if __name__ == '__main__':
                         running = False
 
         elif condition_trigger == 4:
-            print(speedPerFrame)
             if not f1:
                 player.rect.y -= 200
                 f1 = True
