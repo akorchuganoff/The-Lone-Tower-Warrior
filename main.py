@@ -129,6 +129,7 @@ summoner_boss_walk = [pygame.image.load('Data/summoner boss/walk/1.png'), pygame
                    pygame.image.load('Data/summoner boss/walk/7.png')]
 
 ground_sprite = pygame.image.load('Data/env/ground.png')
+border_sprite = pygame.image.load('Data/env/tree.png')
 
 
 def logo(screen, width, height):
@@ -300,14 +301,38 @@ class Ground(pygame.sprite.Sprite):
             self.image = ground_sprite
             self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
         else:
-            self.image = pygame.Surface([width, height])
-            self.rect = pygame.Rect(x, y, width, height)
+            self.image = pygame.Surface([width, 5])
+            self.rect = pygame.Rect(x, y, width, 5)
             self.image.fill((255, 255, 255))
             self.image.set_alpha(0)
 
 
     def update(self):
         pass
+
+
+class VerticalBorder(pygame.sprite.Sprite):
+    def __init__(self, x, y, height, player, groups, sprite=False):
+        super().__init__(*groups)
+        self.player = player
+        if sprite:
+            self.image = border_sprite
+            self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
+        else:
+            self.image = pygame.Surface([5, height])
+            self.rect = pygame.Rect(x, y, 5, height)
+            self.image.fill((255, 255, 255))
+            self.image.set_alpha(0)
+
+    def update(self):
+        global left_trigger
+        global right_trigger
+        if self.rect.x + self.rect.w//4 <=self.player.rect.x <= self.rect.x + self.rect.w//9*4:
+            if self.player.rect.x >= self.rect.x + self.rect.w//3:
+                left_trigger = False
+            else:
+                right_trigger = False
+
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -795,7 +820,11 @@ if __name__ == '__main__':
                                               [all_sprites, maintowergroup], all_sprites, tools)
                         player = Player(player_position[0], player_position[1], 500,
                                         [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
-                        ground = Ground(-300, height // 4 * 3, width, [all_sprites, ground_layer], sprite=True)
+
+                        leftBD = VerticalBorder(-300, 100, 400, player, [all_sprites], sprite=True)
+                        rightBD = VerticalBorder(1200, 100, 400, player, [all_sprites], sprite=True)
+
+                        ground = Ground(-700, height // 4 * 3, width, [all_sprites, ground_layer], sprite=True)
                         shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
                         # portal way
@@ -872,7 +901,7 @@ if __name__ == '__main__':
                                 collisionClock = 0
                                 ground.kill()
                                 continue
-                            if True:
+                            if False:
                                 pygame.mixer.music.set_volume(0.2)
                                 pygame.mixer.music.load('Data/sounds/ogre music.mp3')
                                 pygame.mixer.music.play(loops=-1)
