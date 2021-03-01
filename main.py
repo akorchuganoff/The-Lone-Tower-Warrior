@@ -788,7 +788,7 @@ if __name__ == '__main__':
                                               [all_sprites, maintowergroup], all_sprites, tools)
                         player = Player(player_position[0], player_position[1], 500,
                                         [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
-                        ground = Ground(0, height // 4 * 3, width, [all_sprites, ground_layer])
+                        ground = Ground(-300, height // 4 * 3, width, [all_sprites, ground_layer])
                         shop = shopScreen(width, height, [shop_group], money)
                         waves = 0
                         # portal way
