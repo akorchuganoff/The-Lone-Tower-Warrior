@@ -1176,7 +1176,7 @@ if __name__ == '__main__':
                         name = 'Summoner'
                         boss = Summoner(width - 200, height // 8 * 4, player,
                                         [all_boss_sprites, boss_group], all_boss_sprites,
-                                        tools, name, 30, pygame.image.load('Data/fon2.jpg'),
+                                        tools, name, 300, pygame.image.load('Data/fon2.jpg'),
                                         attack=summoner_boss_attack, walk=summoner_boss_walk,
                                         idle=summoner_boss_idle, death=summoner_boss_death)
                         boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
@@ -1188,7 +1188,7 @@ if __name__ == '__main__':
                         name = 'Wizard'
                         boss = FireBoss(width - 200, height // 8 * 4, player,
                                         [all_boss_sprites, boss_group], all_boss_sprites,
-                                        tools, name, 30, pygame.image.load('Data/fon4.png'),
+                                        tools, name, 200, pygame.image.load('Data/fon4.png'),
                                         attack=fire_boss_attack, idle=fire_boss_idle, death=fire_boss_death)
                         boss_ground = Ground(0, height // 4 * 3 - 50, width, [all_boss_sprites, ground_layer])
                         f2 = True
@@ -1199,7 +1199,7 @@ if __name__ == '__main__':
                         name = 'Ogre'
                         boss = Ogre(width - 200, height // 8 * 4, player,
                                     [all_boss_sprites, boss_group], all_boss_sprites,
-                                    tools, name, 30, pygame.image.load('Data/fon3.png'),
+                                    tools, name, 500, pygame.image.load('Data/fon3.png'),
                                     attack=ogre_boss_attack, walk=ogre_boss_walk,
                                     idle=ogre_boss_idle, death=ogre_boss_death)
                         boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
