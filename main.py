@@ -25,7 +25,7 @@ easy_enemy_walk = [pygame.image.load('Data/easy enemy/walk/' +
 
 easy_enemy_idle = [pygame.image.load('Data/easy enemy/ide.png')]
 
-easy_enemy_attack = [pygame.image.load('Data/easy enemy/walk/' +
+easy_enemy_attack = [pygame.image.load('Data/easy enemy/attack/' +
                                        str(i + 1) + '.png') for i in range(7)]
 
 giant_enemy_walk = [pygame.image.load('Data/giant enemy/walk/' +
@@ -244,10 +244,6 @@ class Player(pygame.sprite.Sprite):
                     self.arrows -= 1
                     return
                 fsoundhit = False
-                if last_move == 'left':
-                    self.rect.x -= 30
-                else:
-                    self.rect.x += 30
                 target1 = pygame.sprite.spritecollideany(self, enemies)
                 target2 = pygame.sprite.spritecollideany(self, boss_group)
                 if target1:
@@ -256,10 +252,6 @@ class Player(pygame.sprite.Sprite):
                 elif target2:
                     target2.hp -= self.damage
                     fsoundhit = True
-                if last_move == 'left':
-                    self.rect.x += 30
-                else:
-                    self.rect.x -= 30
                 if fsoundhit:
                     pygame.mixer.Sound('Data/sounds/hit.mp3').play()
             return
@@ -378,7 +370,7 @@ class Enemy(pygame.sprite.Sprite):
 
     def update(self):
         if self.hp <= 0:
-            money.amount += 1
+            money.amount += 2
             self.hpBar.kill()
             self.kill()
             return
@@ -749,7 +741,7 @@ class Camera:
 def newWave(typesOfEnemies):
     global waves
     waves += 1
-    for i in range(min(waves, 5)):
+    for i in range(min(waves, 4)):
         enemy = typesOfEnemies[random.randrange(0, len(typesOfEnemies), 1)]
         x = random.randrange(ground.rect.x, ground.rect.x + ground.rect.width - 50, 1)
         if enemy == 'goblin':
@@ -773,13 +765,6 @@ if __name__ == '__main__':
     pause = pygame.image.load('Data/pause.png')
     potions = pygame.image.load('Data/potions.png')
     arrows = pygame.image.load('Data/arrows.png')
-    # shop consts
-    attack_upgrade_cost = 10
-    health_upgrade_cost = 10
-    tower_upgrade_cost = 10
-    heal_tower_cost = 50
-    potion_cost = 50
-    arrows_cost = 20
     # main consts
     running = True
     player_position = [width // 2, height // 2]
@@ -865,7 +850,13 @@ if __name__ == '__main__':
                         jump_trigger = False
                         shop_trigger = False
                         last_move = 'right'
-
+                        # shop consts
+                        attack_upgrade_cost = 10
+                        health_upgrade_cost = 10
+                        tower_upgrade_cost = 10
+                        heal_tower_cost = 50
+                        potion_cost = 50
+                        arrows_cost = 20
                         pygame.mixer.music.set_volume(0.1)
                         pygame.mixer.music.load('Data/sounds/castle music.mp3')
                         pygame.mixer.music.play(loops=-1)
