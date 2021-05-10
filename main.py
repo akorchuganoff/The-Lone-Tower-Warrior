@@ -2,6 +2,8 @@
 import pygame
 import random
 import math
+import json
+import schedule
 
 from dead_screen import deadScreen
 from PortalClass import Portal
@@ -81,7 +83,7 @@ def logo(screen, width, height):
         screen.blit(pygame.image.load('Data/the_best_logo_you_ever_seen/name/' + str(i) + '.gif'),
                     (300, 200))
     pygame.draw.rect(screen, pygame.Color('#ffd700'),
-                     ((201, 601), ((800 * i / (303 + 222 + 1) - 2), 30 - 2)), width=0)
+                     ((201, 601), ((800 * i // (303 + 222 + 1) - 2), 30 - 2)))
 
 
 def menuScreen(screen, width, height, colorkey, cont=False):
@@ -166,7 +168,7 @@ class MainTower(pygame.sprite.Sprite):
     def __init__(self, x, y, hp, group, all_sprites, tools):
         super().__init__(*group)
         self.image = pygame.image.load('Data/tower2.png')
-        self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
+        self.rect = pygame.Rect(int(x), int(y), int(self.image.get_width()), int(self.image.get_height()))
         self.width = self.rect.width
         self.height = self.rect.height
         self.fullhp = hp
@@ -474,6 +476,7 @@ class Boss(Enemy):
         else:
             self.attackTrigger = False
 
+
 class FireBoss(Boss):
     def update(self):
         super().update()
@@ -754,6 +757,95 @@ def newWave(typesOfEnemies):
                                 walk=giant_enemy_walk, idle=giant_enemy_idle)
 
 
+def savegame():
+    global player, mainTower, attack_upgrade_cost, health_upgrade_cost, tower_upgrade_cost, curBoss, waves, money
+    with open('Data/save.json') as jsonfile:
+        data = json.load(jsonfile)
+
+    if condition_trigger != 2:
+        return
+
+    # money
+    data['money_amount'] = money.amount
+    # player
+    data['arrows'] = player.arrows
+    data['potion'] = player.potions
+    data['hp'] = player.hp
+    data['damage'] = player.damage
+    # mainTower
+    data['main_tower_hp'] = mainTower.hp
+    data['main_tower_damage'] = mainTower.damage
+    # shop
+    data['attack_upgrade_cost'] = attack_upgrade_cost
+    data['health_upgrade_cost'] = health_upgrade_cost
+    data['tower_upgrade_cost'] = tower_upgrade_cost
+    # other
+    data['curBoss'] = curBoss
+    data['waves'] = waves
+    for key, value in data.items():
+        if type(value) == list:
+            print(f'{key}: {", ".join(value)}')
+        else:
+            print(f'{key}: {value}')
+    with open('Data/save.json', mode='w') as jsonfile:
+        json.dump(data, jsonfile, ensure_ascii=False)
+
+
+def upload_game():
+    global player, mainTower, money
+    with open('Data/save.json') as jsonfile:
+        data = json.load(jsonfile)
+
+    global player, mainTower, attack_upgrade_cost, health_upgrade_cost, tower_upgrade_cost, curBoss, waves, money, condition_trigger
+
+    with open('Data/save.json') as jsonfile:
+        data = json.load(jsonfile)
+
+    # money
+    money.amount = data['money_amount']
+    # player
+    player.arrows = data['arrows']
+    player.potions = data['potion']
+    player.hp = data['hp']
+    player.damage = data['damage']
+    # mainTower
+    mainTower.hp = data['main_tower_hp']
+    mainTower.damage = data['main_tower_damage']
+    # shop
+    attack_upgrade_cost = data['attack_upgrade_cost']
+    health_upgrade_cost = data['health_upgrade_cost']
+    tower_upgrade_cost = data['tower_upgrade_cost']
+    # other
+    curBoss = data['curBoss']
+    waves = data['waves']
+
+
+def new_game_session():
+    with open('Data/save.json') as jsonfile:
+        data = json.load(jsonfile)
+
+    # money
+    data['money_amount'] = 0
+    # player
+    data['arrows'] = 20
+    data['potion'] = 1
+    data['hp'] = 500
+    data['damage'] = 4
+    # mainTower
+    data['main_tower_hp'] = 1000
+    data['main_tower_damage'] = 0
+    # shop
+    data['attack_upgrade_cost'] = 10
+    data['health_upgrade_cost'] = 10
+    data['tower_upgrade_cost'] = 10
+    # other
+    data['curBoss'] = 1
+    data['waves'] = 0
+
+    with open('Data/save.json', mode='w') as jsonfile:
+        json.dump(data, jsonfile, ensure_ascii=False)
+
+
 if __name__ == '__main__':
     pygame.mixer.pre_init(48000, -16, 1, 1024)
     pygame.mixer.init()
@@ -773,11 +865,18 @@ if __name__ == '__main__':
     typesOfEnemies = ['goblin', 'giant']
     # conditions and clocks
     clock = pygame.time.Clock()
-    condition_trigger = -1
+    condition_trigger = 0
+    first_time_trigger = True
+    boss_trigger = False
     collisionClock = 0
     time = 10
     # is available continue button
-    fcont = False
+    with open('Data/save.txt', mode='r') as file:
+        f = file.readlines()
+    if len(f) != 0:
+        fcont = True
+    else:
+        fcont = False
     # camera?
     camera = Camera()
     # New logo
@@ -796,8 +895,10 @@ if __name__ == '__main__':
     # del old notes
     f = open("Data/coords save.txt", 'w')
     f.close()
+    schedule.every(3).minutes.do(savegame)
 
     while running:
+        schedule.run_pending()
         speedPerFrame = clock.tick(fps) / 1000
         if condition_trigger == -1:
             for event in pygame.event.get():
@@ -833,7 +934,7 @@ if __name__ == '__main__':
                         portal_group = pygame.sprite.Group()
 
                         money = Money([all_sprites, tools])
-                        mainTower = MainTower(width // 8 * 2.5, height // 10, 1000,
+                        mainTower = MainTower(width * 2.5 // 8, height // 10, 1000,
                                               [all_sprites, maintowergroup], all_sprites, tools)
                         player = Player(player_position[0], player_position[1], 500,
                                         [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
@@ -844,6 +945,7 @@ if __name__ == '__main__':
                         waves = 0
                         curBoss = 1
                         portal = Portal([all_sprites, portal_group])
+                        new_game_session()
                         # movement triggers
                         right_trigger = False
                         left_trigger = False
@@ -862,8 +964,56 @@ if __name__ == '__main__':
                         pygame.mixer.music.play(loops=-1)
                     elif fcont and continue_pos[0] <= x <= continue_pos[2] and\
                             continue_pos[1] <= y <= continue_pos[3]:
-                        # it indicates whether to return (to the boss or to the castle)
-                        condition_trigger = last_condition
+                        if first_time_trigger or boss_trigger:
+                            first_time_trigger = False
+                            boss_trigger = False
+                            collisionClock = 0
+                            condition_trigger = 2
+                            # start game
+                            all_sprites = pygame.sprite.Group()
+                            all_boss_sprites = pygame.sprite.Group()
+                            boss_group = pygame.sprite.Group()
+                            maintowergroup = pygame.sprite.Group()
+                            player_group = pygame.sprite.Group()
+                            ground_layer = pygame.sprite.Group()
+                            enemies = pygame.sprite.Group()
+                            bullets = pygame.sprite.Group()
+                            tools = pygame.sprite.Group()
+                            portal_group = pygame.sprite.Group()
+
+                            money = Money([all_sprites, tools])
+                            mainTower = MainTower(width * 2.5 // 8, height // 10, 1000,
+                                                  [all_sprites, maintowergroup], all_sprites, tools)
+                            player = Player(player_position[0], player_position[1], 500,
+                                            [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
+                            leftBD = VerticalBorder(-300, 100, 400, player, [all_sprites], sprite=True)
+                            rightBD = VerticalBorder(1200, 100, 400, player, [all_sprites], sprite=True)
+                            ground = Ground(-700, height // 4 * 3, width, [all_sprites, ground_layer], sprite=True)
+
+                            waves = 0
+                            curBoss = 1
+                            portal = Portal([all_sprites, portal_group])
+                            # movement triggers
+                            right_trigger = False
+                            left_trigger = False
+                            jump_trigger = False
+                            shop_trigger = False
+                            last_move = 'right'
+                            # shop consts
+                            attack_upgrade_cost = 10
+                            health_upgrade_cost = 10
+                            tower_upgrade_cost = 10
+                            heal_tower_cost = 50
+                            potion_cost = 50
+                            arrows_cost = 20
+                            pygame.mixer.music.set_volume(0.1)
+                            pygame.mixer.music.load('Data/sounds/castle music.mp3')
+                            pygame.mixer.music.play(loops=-1)
+                            upload_game()
+                        else:
+                            # it indicates whether to return (to the boss or to the castle)
+                            condition_trigger = last_condition
+
                     elif exit_pos[0] <= x <= exit_pos[2] and exit_pos[1] <= y <= exit_pos[3]:
                         running = False
             menuScreen(screen, width, height, colorkey, cont=fcont)
@@ -893,7 +1043,7 @@ if __name__ == '__main__':
                         elif event.key == pygame.K_e:
                             if player.potions > 0 and player.hp != player.fullhp:
                                 player.potions -= 1
-                                player.hp = min(player.fullhp, round(player.hp * 1.2))
+                                player.hp = min(player.fullhp, round(player.fullhp * 0.2)+player.hp)
                     elif event.type == pygame.KEYUP:
                         # horizontal move
                         if event.key == pygame.K_RIGHT:
@@ -1007,7 +1157,7 @@ if __name__ == '__main__':
                         elif pos[0] in range(100, 250 + 75) and pos[1] in range(475, 250 + 475):
                             if money.amount >= heal_tower_cost:
                                 money.amount -= heal_tower_cost
-                                mainTower.hp += mainTower.fullhp * 0.1
+                                mainTower.hp += mainTower.fullhp * 0.2
                                 if mainTower.hp > mainTower.fullhp:
                                     mainTower.hp = mainTower.fullhp
                         elif pos[0] in range(475, 250 + 475) and pos[1] in range(475, 250 + 475):
@@ -1019,10 +1169,11 @@ if __name__ == '__main__':
                                 money.amount -= arrows_cost
                                 player.arrows += 5
                 shopScreen1(screen)
+            savegame()
 
         elif condition_trigger == 3:
             deadScreen(screen, width, height)
-            fcont = False
+            fcont = True
             for elem in all_sprites:
                 elem.kill()
             for elem in all_boss_sprites:
@@ -1031,15 +1182,110 @@ if __name__ == '__main__':
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    pos = event.pos
-                    if height // 2 < event.pos[1] < height // 2 + height // 4 and\
-                            width // 4 < event.pos[0] < width // 2:
-                        condition_trigger = 0
-                    elif height // 2 < event.pos[1] < height // 2 + height // 4 and\
-                            width // 2 < event.pos[0] < width // 4 + width // 2:
+                    x, y = event.pos
+                    start_pos, continue_pos, exit_pos = menuScreen(screen, width, height, colorkey, cont=fcont)
+                    if start_pos[0] <= x <= start_pos[2] and start_pos[1] <= y <= start_pos[3]:
+                        collisionClock = 0
+                        condition_trigger = 2
+                        # start game
+                        all_sprites = pygame.sprite.Group()
+                        all_boss_sprites = pygame.sprite.Group()
+                        boss_group = pygame.sprite.Group()
+                        maintowergroup = pygame.sprite.Group()
+                        player_group = pygame.sprite.Group()
+                        ground_layer = pygame.sprite.Group()
+                        enemies = pygame.sprite.Group()
+                        bullets = pygame.sprite.Group()
+                        tools = pygame.sprite.Group()
+                        portal_group = pygame.sprite.Group()
+
+                        money = Money([all_sprites, tools])
+                        mainTower = MainTower(width * 2.5 // 8, height // 10, 1000,
+                                              [all_sprites, maintowergroup], all_sprites, tools)
+                        player = Player(player_position[0], player_position[1], 500,
+                                        [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
+                        leftBD = VerticalBorder(-300, 100, 400, player, [all_sprites], sprite=True)
+                        rightBD = VerticalBorder(1200, 100, 400, player, [all_sprites], sprite=True)
+                        ground = Ground(-700, height // 4 * 3, width, [all_sprites, ground_layer], sprite=True)
+
+                        waves = 0
+                        curBoss = 1
+                        portal = Portal([all_sprites, portal_group])
+                        new_game_session()
+                        # movement triggers
+                        right_trigger = False
+                        left_trigger = False
+                        jump_trigger = False
+                        shop_trigger = False
+                        last_move = 'right'
+                        # shop consts
+                        attack_upgrade_cost = 10
+                        health_upgrade_cost = 10
+                        tower_upgrade_cost = 10
+                        heal_tower_cost = 50
+                        potion_cost = 50
+                        arrows_cost = 20
+                        pygame.mixer.music.set_volume(0.1)
+                        pygame.mixer.music.load('Data/sounds/castle music.mp3')
+                        pygame.mixer.music.play(loops=-1)
+                    elif fcont and continue_pos[0] <= x <= continue_pos[2] and \
+                            continue_pos[1] <= y <= continue_pos[3]:
+                        if first_time_trigger or boss_trigger:
+                            first_time_trigger = False
+                            boss_trigger = False
+                            collisionClock = 0
+                            condition_trigger = 2
+                            # start game
+                            all_sprites = pygame.sprite.Group()
+                            all_boss_sprites = pygame.sprite.Group()
+                            boss_group = pygame.sprite.Group()
+                            maintowergroup = pygame.sprite.Group()
+                            player_group = pygame.sprite.Group()
+                            ground_layer = pygame.sprite.Group()
+                            enemies = pygame.sprite.Group()
+                            bullets = pygame.sprite.Group()
+                            tools = pygame.sprite.Group()
+                            portal_group = pygame.sprite.Group()
+
+                            money = Money([all_sprites, tools])
+                            mainTower = MainTower(width * 2.5 // 8, height // 10, 1000,
+                                                  [all_sprites, maintowergroup], all_sprites, tools)
+                            player = Player(player_position[0], player_position[1], 500,
+                                            [all_sprites, player_group, all_boss_sprites], all_sprites, tools)
+                            leftBD = VerticalBorder(-300, 100, 400, player, [all_sprites], sprite=True)
+                            rightBD = VerticalBorder(1200, 100, 400, player, [all_sprites], sprite=True)
+                            ground = Ground(-700, height // 4 * 3, width, [all_sprites, ground_layer], sprite=True)
+
+                            waves = 0
+                            curBoss = 1
+                            portal = Portal([all_sprites, portal_group])
+                            # movement triggers
+                            right_trigger = False
+                            left_trigger = False
+                            jump_trigger = False
+                            shop_trigger = False
+                            last_move = 'right'
+                            # shop consts
+                            attack_upgrade_cost = 10
+                            health_upgrade_cost = 10
+                            tower_upgrade_cost = 10
+                            heal_tower_cost = 50
+                            potion_cost = 50
+                            arrows_cost = 20
+                            pygame.mixer.music.set_volume(0.1)
+                            pygame.mixer.music.load('Data/sounds/castle music.mp3')
+                            pygame.mixer.music.play(loops=-1)
+                            upload_game()
+                        else:
+                            # it indicates whether to return (to the boss or to the castle)
+                            condition_trigger = last_condition
+
+                    elif exit_pos[0] <= x <= exit_pos[2] and exit_pos[1] <= y <= exit_pos[3]:
                         running = False
+            menuScreen(screen, width, height, colorkey, cont=fcont)
 
         elif condition_trigger == 4:
+            boss_trigger = True
             if not f1:
                 player.rect.y -= 200
                 f1 = True
