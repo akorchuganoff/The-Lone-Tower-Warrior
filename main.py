@@ -41,7 +41,7 @@ giant_enemy_attack = [pygame.image.load('Data/giant enemy/attack/' +
 fire_boss_idle = [pygame.image.load('Data/fire boss/idle.png')]
 
 fire_boss_attack = [pygame.image.load('Data/fire boss/attack/' +
-                                      str(i + 1) + '.png') for i in range(3)] +\
+                                      str(i + 1) + '.png') for i in range(3)] + \
                    [pygame.image.load('Data/fire boss/attack/' +
                                       str(i + 1) + '.png') for i in range(5)]
 
@@ -65,10 +65,10 @@ summoner_boss_attack = [pygame.image.load('Data/summoner boss/attack/' +
                                           str(i + 1) + '.png') for i in range(7)]
 
 summoner_boss_death = [pygame.image.load('Data/summoner boss/death/' +
-                                          str(i + 1) + '.png') for i in range(7)]
+                                         str(i + 1) + '.png') for i in range(7)]
 
 summoner_boss_walk = [pygame.image.load('Data/summoner boss/walk/' +
-                                          str(i + 1) + '.png') for i in range(7)]
+                                        str(i + 1) + '.png') for i in range(7)]
 
 ground_sprite = pygame.image.load('Data/env/ground.png')
 border_sprite = pygame.image.load('Data/env/tree.png')
@@ -99,7 +99,7 @@ def menuScreen(screen, width, height, colorkey, cont=False):
 
 
 def menuBoss(screen, curBoss):
-    screen.blit(pygame.image.load('Data/menu/boss menu.png'),(0, 0))
+    screen.blit(pygame.image.load('Data/menu/boss menu.png'), (0, 0))
     for i in range(3 - curBoss):
         screen.blit(pygame.image.load('Data/menu/locked1.png'), (200 + 350 * (2 - i), 340))
         screen.blit(pygame.image.load('Data/menu/locked.gif'), (185 + 350 * (2 - i), 260))
@@ -341,8 +341,8 @@ class VerticalBorder(pygame.sprite.Sprite):
     def update(self):
         global left_trigger
         global right_trigger
-        if self.rect.x + self.rect.w//4 <=self.player.rect.x <= self.rect.x + self.rect.w//9*4:
-            if self.player.rect.x >= self.rect.x + self.rect.w//3:
+        if self.rect.x + self.rect.w // 4 <= self.player.rect.x <= self.rect.x + self.rect.w // 9 * 4:
+            if self.player.rect.x >= self.rect.x + self.rect.w // 3:
                 left_trigger = False
             else:
                 right_trigger = False
@@ -463,7 +463,7 @@ class Boss(Enemy):
             self.deathClock += 1
             return
         if self.hp <= 0:
-            if name == 'Summoner' and curBoss == 1 or\
+            if name == 'Summoner' and curBoss == 1 or \
                     name == 'Wizard' and curBoss == 2 or name == 'Ogre' and curBoss == 3:
                 money.amount += 100
             self.death()
@@ -499,7 +499,8 @@ class FireBoss(Boss):
                 n = abs(self.rect.x + self.rect.width // 2)
                 x = random.randint(n - 50, n + 50)
                 n = abs(n - self.player.rect.x - self.player.rect.width // 2)
-                y = random.randint(self.rect.y + self.rect.height // 2 - n - 75, self.rect.y + self.rect.height // 2 - n + 75)
+                y = random.randint(self.rect.y + self.rect.height // 2 - n - 75,
+                                   self.rect.y + self.rect.height // 2 - n + 75)
                 Bullet(x, y,
                        pygame.image.load('Data/fireball/fireball50_35.png'),
                        d, 400, 10, 'player', [bullets, all_boss_sprites], 400)
@@ -654,7 +655,7 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.x += self.direct * self.xspeed * speedPerFrame
         self.rect.y += self.yspeed * speedPerFrame
         for i in self.target:
-            if i not in all_boss_sprites and condition_trigger == 4 or\
+            if i not in all_boss_sprites and condition_trigger == 4 or \
                     i not in all_sprites and condition_trigger == 2:
                 continue
             target = pygame.sprite.spritecollideany(self, i)
@@ -749,12 +750,12 @@ def newWave(typesOfEnemies):
         x = random.randrange(ground.rect.x, ground.rect.x + ground.rect.width - 50, 1)
         if enemy == 'goblin':
             enemy = Enemy(x, ground.rect.y - 100, player, [all_sprites, enemies],
-                               all_sprites, tools, hp=10, attack=easy_enemy_attack,
-                               walk=easy_enemy_walk, idle=easy_enemy_idle)
+                          all_sprites, tools, hp=10, attack=easy_enemy_attack,
+                          walk=easy_enemy_walk, idle=easy_enemy_idle)
         elif enemy == 'giant':
             enemy = Enemy(x, ground.rect.y - 100, mainTower, [all_sprites, enemies],
-                                all_sprites, tools, hp=25, attack=giant_enemy_attack,
-                                walk=giant_enemy_walk, idle=giant_enemy_idle)
+                          all_sprites, tools, hp=25, attack=giant_enemy_attack,
+                          walk=giant_enemy_walk, idle=giant_enemy_idle)
 
 
 def savegame():
@@ -962,7 +963,7 @@ if __name__ == '__main__':
                         pygame.mixer.music.set_volume(0.1)
                         pygame.mixer.music.load('Data/sounds/castle music.mp3')
                         pygame.mixer.music.play(loops=-1)
-                    elif fcont and continue_pos[0] <= x <= continue_pos[2] and\
+                    elif fcont and continue_pos[0] <= x <= continue_pos[2] and \
                             continue_pos[1] <= y <= continue_pos[3]:
                         if first_time_trigger or boss_trigger:
                             first_time_trigger = False
@@ -1025,14 +1026,14 @@ if __name__ == '__main__':
                         running = False
                     if event.type == pygame.KEYDOWN:
                         # horizontal move
-                        if event.key == pygame.K_RIGHT:
+                        if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                             right_trigger = True
                             left_trigger = False
-                        elif event.key == pygame.K_LEFT:
+                        elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
                             right_trigger = False
                             left_trigger = True
                         # vertical move
-                        elif event.key == pygame.K_UP:
+                        elif event.key == pygame.K_UP or event.key == pygame.K_w:
                             s = pygame.mixer.Sound('Data/sounds/bow_jump.mp3')
                             s.set_volume(0.5)
                             s.play()
@@ -1040,22 +1041,34 @@ if __name__ == '__main__':
                         # shop
                         elif event.key == pygame.K_q:
                             shop_trigger = True
+                        # use potion
                         elif event.key == pygame.K_e:
                             if player.potions > 0 and player.hp != player.fullhp:
                                 player.potions -= 1
-                                player.hp = min(player.fullhp, round(player.fullhp * 0.2)+player.hp)
+                                player.hp = min(player.fullhp, round(player.fullhp * 0.2) + player.hp)
+                        # pause
+                        elif event.key == pygame.K_ESCAPE:
+                            condition_trigger = 0
+                            pygame.mixer.music.set_volume(0.1)
+                            pygame.mixer.music.load('Data/sounds/castle music.mp3')
+                            pygame.mixer.music.play(loops=-1)
+                            fcont = True
+                            last_condition = 2
+                            continue
+
                     elif event.type == pygame.KEYUP:
                         # horizontal move
-                        if event.key == pygame.K_RIGHT:
+                        if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                             right_trigger = False
-                        elif event.key == pygame.K_LEFT:
+                        elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
                             left_trigger = False
                         # pause
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        if event.button == 1 and\
-                                event.pos[0] > 10 and\
-                                event.pos[0] < 60 and\
-                                event.pos[1] > 10 and\
+                        # pause
+                        if event.button == 1 and \
+                                event.pos[0] > 10 and \
+                                event.pos[0] < 60 and \
+                                event.pos[1] > 10 and \
                                 event.pos[1] < 64:
                             condition_trigger = 0
                             pygame.mixer.music.set_volume(0.1)
@@ -1065,10 +1078,10 @@ if __name__ == '__main__':
                             last_condition = 2
                             continue
                         # boss choose
-                        elif event.button == 1 and\
-                                event.pos[0] > portal.rect.x and\
-                                event.pos[0] < portal.rect.x + portal.rect.width and\
-                                event.pos[1] > portal.rect.y and\
+                        elif event.button == 1 and \
+                                event.pos[0] > portal.rect.x and \
+                                event.pos[0] < portal.rect.x + portal.rect.width and \
+                                event.pos[1] > portal.rect.y and \
                                 event.pos[1] < portal.rect.y + portal.rect.height:
                             condition_trigger = 5
                             continue
@@ -1124,7 +1137,7 @@ if __name__ == '__main__':
                 all_sprites.update()
 
                 camera.update(player)
-                for sprite in all_sprites :
+                for sprite in all_sprites:
                     if sprite != money:
                         camera.apply(sprite)
 
@@ -1406,7 +1419,7 @@ if __name__ == '__main__':
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     pos = event.pos
                     f2 = False
-                    if curBoss >= 1 and 100 < pos[0] < 400  and 300 < pos[1] < 500:
+                    if curBoss >= 1 and 100 < pos[0] < 400 and 300 < pos[1] < 500:
                         pygame.mixer.music.set_volume(0.2)
                         pygame.mixer.music.load('Data/sounds/summoner music.mp3')
                         pygame.mixer.music.play(loops=-1)
@@ -1418,7 +1431,7 @@ if __name__ == '__main__':
                                         idle=summoner_boss_idle, death=summoner_boss_death)
                         boss_ground = Ground(0, height // 8 * 7, width, [all_boss_sprites, ground_layer])
                         f2 = True
-                    elif curBoss >= 2 and 450 < pos[0] < 750  and 300 < pos[1] < 500:
+                    elif curBoss >= 2 and 450 < pos[0] < 750 and 300 < pos[1] < 500:
                         pygame.mixer.music.set_volume(0.1)
                         pygame.mixer.music.load('Data/sounds/wizard music.mp3')
                         pygame.mixer.music.play(loops=-1)
@@ -1429,7 +1442,7 @@ if __name__ == '__main__':
                                         attack=fire_boss_attack, idle=fire_boss_idle, death=fire_boss_death)
                         boss_ground = Ground(0, height // 4 * 3 - 50, width, [all_boss_sprites, ground_layer])
                         f2 = True
-                    elif curBoss >= 3 and 800 < pos[0] < 1100  and 300 < pos[1] < 500:
+                    elif curBoss >= 3 and 800 < pos[0] < 1100 and 300 < pos[1] < 500:
                         pygame.mixer.music.set_volume(0.2)
                         pygame.mixer.music.load('Data/sounds/ogre music.mp3')
                         pygame.mixer.music.play(loops=-1)
