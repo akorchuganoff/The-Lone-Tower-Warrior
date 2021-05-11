@@ -164,6 +164,10 @@ def shopScreen1(screen):
     screen.blit(balance_text, (balance_text_x3, balance_text_y2))
 
 
+def end_game(screen):
+    pass
+
+
 class MainTower(pygame.sprite.Sprite):
     def __init__(self, x, y, hp, group, all_sprites, tools):
         super().__init__(*group)
@@ -463,10 +467,13 @@ class Boss(Enemy):
             self.deathClock += 1
             return
         if self.hp <= 0:
-            if name == 'Summoner' and curBoss == 1 or \
-                    name == 'Wizard' and curBoss == 2 or name == 'Ogre' and curBoss == 3:
-                money.amount += 100
+            if name == 'Summoner' and curBoss == 1:
+                money.amount += 300
+            elif name == 'Wizard' and curBoss == 2:
+                money.amount += 500
             self.death()
+            if name == 'Ogre' and curBoss == 3:
+                end_game()
             return
         if pygame.sprite.spritecollideany(self, player_group):
             if not self.attackTrigger:
@@ -1310,15 +1317,15 @@ if __name__ == '__main__':
                 if event.type == pygame.QUIT:
                     running = False
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RIGHT:
+                    if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                         last_move = 'right'
                         right_trigger = True
                         left_trigger = False
-                    elif event.key == pygame.K_LEFT:
+                    elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
                         last_move = 'left'
                         right_trigger = False
                         left_trigger = True
-                    elif event.key == pygame.K_UP:
+                    elif event.key == pygame.K_UP or event.key == pygame.K_w:
                         s = pygame.mixer.Sound('Data/sounds/bow_jump.mp3')
                         s.set_volume(0.5)
                         s.play()
@@ -1328,9 +1335,9 @@ if __name__ == '__main__':
                             player.potions -= 1
                             player.hp = min(player.fullhp, round(player.hp * 1.2))
                 elif event.type == pygame.KEYUP:
-                    if event.key == pygame.K_RIGHT:
+                    if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                         right_trigger = False
-                    elif event.key == pygame.K_LEFT:
+                    elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
                         left_trigger = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1 and \
