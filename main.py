@@ -471,9 +471,9 @@ class Boss(Enemy):
                 money.amount += 300
             elif name == 'Wizard' and curBoss == 2:
                 money.amount += 500
+            elif name == 'Ogre' and curBoss == 3:
+                money.amount += 1000
             self.death()
-            if name == 'Ogre' and curBoss == 3:
-                end_game()
             return
         if pygame.sprite.spritecollideany(self, player_group):
             if not self.attackTrigger:
@@ -1117,7 +1117,7 @@ if __name__ == '__main__':
                 # vertical move
                 if jump_trigger:
                     if player.isGrounded:
-                        vertical_speed = -300
+                        vertical_speed = -450
                         player.vy = vertical_speed * speedPerFrame
                     jump_trigger = False
                 else:
@@ -1126,7 +1126,7 @@ if __name__ == '__main__':
                     else:
                         vertical_speed += 20
                     player.vy = vertical_speed * speedPerFrame
-                # enemies spawn
+                # enemies spawnww
                 if int(time) % 15 == 0:
                     time += 1
                     newWave(typesOfEnemies)
@@ -1371,7 +1371,7 @@ if __name__ == '__main__':
                 player.vx = 0
             if jump_trigger:
                 if player.isGrounded:
-                    vertical_speed = -300
+                    vertical_speed = -500
                     player.vy = vertical_speed * speedPerFrame
                 jump_trigger = False
             else:
