@@ -873,7 +873,7 @@ if __name__ == '__main__':
     typesOfEnemies = ['goblin', 'giant']
     # conditions and clocks
     clock = pygame.time.Clock()
-    condition_trigger = 0
+    condition_trigger = -1
     first_time_trigger = True
     boss_trigger = False
     collisionClock = 0
